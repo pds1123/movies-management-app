@@ -1,0 +1,29 @@
+# Frontend
+react-movies/node_modules/
+react-movies/dist/
+react-movies/dist-ssr/
+react-movies/*.log
+react-movies/.env.local
+react-movies/.env.*.local
+
+# Backend
+MoviesAPI/bin/
+MoviesAPI/obj/
+MoviesAPI/*.log
+MoviesAPI/appsettings.Development.json
+
+# User/editor files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sw?
+.DS_Store
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
