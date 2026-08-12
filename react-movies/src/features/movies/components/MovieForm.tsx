@@ -57,7 +57,7 @@ export default function MovieForm(props: MovieFormProps){
                 <div className="form-grid">
                 <div className="form-group form-field-full">
                     <label htmlFor="title">Title</label>
-                    <input id="title" placeholder="e.g. Paris, Texas (1984)" autoComplete="off" className="form-control" {...register('title')} />
+                    <input id="title" placeholder="e.g. Film title (year)" autoComplete="off" className="form-control" {...register('title')} />
                     {errors.title && <p className="error">{errors.title.message}</p>}
                 </div>
 

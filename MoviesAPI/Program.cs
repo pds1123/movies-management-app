@@ -38,8 +38,21 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=DefaultConnection",
-    sqlServer => sqlServer.UseNetTopologySuite()));
+var useInMemoryDatabase = builder.Environment.IsDevelopment()
+    && builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    if (useInMemoryDatabase)
+    {
+        options.UseInMemoryDatabase("MoviesAPI-Development");
+    }
+    else
+    {
+        options.UseSqlServer("name=DefaultConnection",
+            sqlServer => sqlServer.UseNetTopologySuite());
+    }
+});
 
 builder.Services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid:4326));
 
@@ -95,6 +108,11 @@ builder.Services.AddOutputCache(options =>
 
 var app = builder.Build();
 
+if (useInMemoryDatabase)
+{
+    await LocalDevelopmentDataSeeder.SeedAsync(app.Services, app.Configuration);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -106,7 +124,10 @@ app.UseCors();
 
 app.UseOutputCache();
 
-app.UseHttpsRedirection();
+if (builder.Configuration.GetValue("UseHttpsRedirection", true))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseStaticFiles();
 

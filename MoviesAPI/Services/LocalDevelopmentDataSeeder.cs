@@ -1,0 +1,48 @@
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+
+namespace MoviesAPI.Services;
+
+public static class LocalDevelopmentDataSeeder
+{
+    public static async Task SeedAsync(IServiceProvider services, IConfiguration configuration)
+    {
+        using var scope = services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+        await context.Database.EnsureCreatedAsync();
+
+        var email = configuration["LocalAdmin:Email"];
+        var password = configuration["LocalAdmin:Password"];
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return;
+        }
+
+        var admin = await userManager.FindByEmailAsync(email);
+
+        if (admin is null)
+        {
+            admin = new IdentityUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(admin, password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(error => error.Description));
+                throw new InvalidOperationException($"Unable to create the local admin user: {errors}");
+            }
+        }
+
+        var claims = await userManager.GetClaimsAsync(admin);
+        if (!claims.Any(claim => claim.Type == "isadmin"))
+        {
+            await userManager.AddClaimAsync(admin, new Claim("isadmin", "true"));
+        }
+    }
+}

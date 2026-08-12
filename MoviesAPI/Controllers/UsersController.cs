@@ -14,7 +14,7 @@ namespace MoviesAPI.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isadmin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isadmin")]
     public class UsersController : CustomBaseController
     {
         private readonly UserManager<IdentityUser> userManager;
