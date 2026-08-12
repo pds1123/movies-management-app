@@ -17,16 +17,16 @@ export default function GenreForm(props: GenreFormProps){
     return (
         <>
             <DisplayErrors errors={props.errors} />
-            <form onSubmit={handleSubmit(props.onSubmit)}>
+            <form className="admin-form admin-form-compact" onSubmit={handleSubmit(props.onSubmit)}>
                 <div className="form-group">
                     <label htmlFor="name">Name</label>
                     <input  autoComplete="off" className="form-control" {...register('name')} />
                     {errors.name && <p className="error">{errors.name.message}</p>}
                 </div>
 
-                <div className="mt-2">                    
-                    <Button type="submit" disabled={!isValid || isSubmitting}>{isSubmitting ? 'Sending...' : 'send'}</Button>
-                    <NavLink className="btn btn-secondary ms-2"to={"/genres"}>Cancel</NavLink>
+                <div className="form-actions">
+                    <Button type="submit" disabled={!isValid || isSubmitting}>{isSubmitting ? 'Saving...' : 'Save genre'}</Button>
+                    <NavLink className="btn btn-link" to={"/genres"}>Cancel</NavLink>
                 </div>
 
             </form>   

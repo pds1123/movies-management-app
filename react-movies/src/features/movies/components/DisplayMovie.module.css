@@ -1,18 +1,68 @@
-.div{
-    margin-right: 2%;
-    margin-bottom: 10px;
-    text-align: center;
+.movie {
+    min-width: 0;
 }
 
-.div p{
-    font-size: 15px;
-    font-weight: bold;
-}
-.div img{
-    width: 225px;
-    height: 300px;
+.posterLink {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 2 / 3;
+    background: var(--frame-surface);
 }
 
-.div a{
+.posterLink::after {
+    position: absolute;
+    inset: 0;
+    border: 0 solid var(--frame-sky);
+    content: "";
+    pointer-events: none;
+    transition: border-width 220ms var(--frame-ease);
+}
+
+.posterLink:hover::after,
+.posterLink:focus-visible::after {
+    border-width: 6px;
+}
+
+.posterLink img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 420ms var(--frame-ease);
+}
+
+.posterLink:hover img {
+    transform: scale(1.025);
+}
+
+.details {
+    padding-top: 16px;
+}
+
+.date {
+    margin: 0 0 6px;
+    color: var(--frame-primary);
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+.details h3 {
+    margin: 0;
+    font-size: clamp(1.2rem, 2vw, 1.55rem);
+    line-height: 1.08;
+}
+
+.details h3 a {
+    color: var(--frame-ink);
     text-decoration: none;
+}
+
+.details h3 a:hover {
+    color: var(--frame-primary);
+}
+
+.adminActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
 }

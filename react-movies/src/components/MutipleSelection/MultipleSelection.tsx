@@ -30,19 +30,25 @@ export default function MultipleSelection(props: MultipleSelectionProps){
 
     return (
         <div className={styles.multipleSelectors}>
+            <div className={styles.group}>
+            <span>Available</span>
             <ul className={styles.list}>
-                {props.nonSelected.map(item => <li key={item.key} onClick={() => select(item)}>
-                    {item.description}</li>)}
+                {props.nonSelected.map(item => <li key={item.key}>
+                    <button type="button" onClick={() => select(item)}>{item.description}</button></li>)}
             </ul>
-
-            <div className={styles.buttons}>
-                <button onClick={selectAll} type="button">{'>>'}</button>
-                <button onClick={deselectAll} type="button">{'<<'}</button>
             </div>
 
+            <div className={styles.buttons}>
+                <button onClick={selectAll} type="button" aria-label="Select all"><span aria-hidden="true">→</span></button>
+                <button onClick={deselectAll} type="button" aria-label="Deselect all"><span aria-hidden="true">←</span></button>
+            </div>
+
+            <div className={styles.group}>
+            <span>Selected</span>
             <ul className={styles.list}>
-                {props.selected.map(item => <li key={item.key} onClick={() => deselect(item) }>{item.description}</li>)}
-            </ul>            
+                {props.selected.map(item => <li key={item.key}><button type="button" onClick={() => deselect(item) }>{item.description}</button></li>)}
+            </ul>
+            </div>
         </div>
     )
 

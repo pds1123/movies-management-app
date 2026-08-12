@@ -26,23 +26,28 @@ export default function FilterMovies() {
 
 
     return (
-        <>
-            <h3>Filter Movies</h3>
-            <form className="row row-cols-lg-auto g-3 align-items-center"
+        <div className="browse-page">
+            <header className="page-heading">
+                <h1>Filter Movies</h1>
+            </header>
+            <form className="filter-panel"
                 onSubmit={handleSubmit(onSubmit)}
             >
-                <div className="col-12">
-                    <input placeholder="Movie title" autoComplete="off" className="form-control"
+                <div className="filter-field filter-search">
+                    <label htmlFor="movie-title">Film title</label>
+                    <input id="movie-title" placeholder="Search by title" autoComplete="off" className="form-control"
                         {...register('title')} />
                 </div>
-                <div className="col-12">
-                    <select className="form-select" {...register('genreId')}>
-                        <option value="0">--Select a genre--</option>
+                <div className="filter-field">
+                    <label htmlFor="movie-genre">Genre</label>
+                    <select id="movie-genre" className="form-select" {...register('genreId')}>
+                        <option value="0">All genres</option>
                         {useFilterMoviesHook.genres.map(genre => <option
                             key={genre.id} value={genre.id}>{genre.name}</option>)}
                     </select>
                 </div>
-                <div className="col-12">
+                <fieldset className="filter-status">
+                    <legend>Status</legend>
                     <div className="form-check">
                         <input className="form-check-input" type="checkbox" id="upcomingReleases"
                             {...register('upcomingReleases')} />
@@ -50,9 +55,7 @@ export default function FilterMovies() {
                             Upcoming releases
                         </label>
                     </div>
-                </div>
 
-                <div className="col-12">
                     <div className="form-check">
                         <input className="form-check-input" type="checkbox" id="inTheaters"
                             {...register('inTheaters')} />
@@ -60,23 +63,23 @@ export default function FilterMovies() {
                             In theaters
                         </label>
                     </div>
-                </div>
+                </fieldset>
 
-                <div className="col-12">
+                <div className="filter-actions">
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? 'Filtering...' : 'Filter'}
                     </Button>
-                    <Button className="btn btn-danger ms-2" onClick={() => {
+                    <Button className="btn btn-link" onClick={() => {
                         reset();
                         useFilterMoviesHook.loadRecords(initialValues);
                     }}>
-                        Reset
+                        Clear filters
                     </Button>
                 </div>
 
             </form>
 
-            <div className="mt-4">
+            <div className="browse-pagination">
                 <Pagination currentPage={useFilterMoviesHook.page} 
                 recordsPerPage={useFilterMoviesHook.recordsPerPage}
                     totalAmountOfRecords={useFilterMoviesHook.totalAmountOfRecords}
@@ -88,9 +91,9 @@ export default function FilterMovies() {
                 />
             </div>
 
-            <div className="mt-4">
+            <div className="browse-results">
                 <MoviesList movies={useFilterMoviesHook.movies} />
             </div>
-        </>
+        </div>
     )
 }

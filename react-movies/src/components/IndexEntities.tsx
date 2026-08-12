@@ -26,13 +26,18 @@ export default function IndexEntities<T>(props: IndexEntitiesProps<T>){
     </>
 
         return (
-            <>
-                <h3>{props.title}</h3>
-                {props.urlCreate && props.entity ? <div className="mb-2">
-                    <NavLink to={props.urlCreate} className="btn btn-primary">{props.entity}</NavLink>
-                </div> : undefined}
+            <section className="admin-page">
+                <header className="admin-page-heading">
+                    <div>
+                        <p>FRAME administration</p>
+                        <h1>{props.title}</h1>
+                    </div>
+                    {props.urlCreate && props.entity ?
+                        <NavLink to={props.urlCreate} className="btn btn-primary"><i className="bi bi-plus-lg" aria-hidden="true"></i>{props.entity}</NavLink>
+                    : undefined}
+                </header>
                 {props.loading ? <Loading /> : <>
-                    <div className="mb-2">
+                    <div className="admin-pagination">
                         <Pagination
                             totalAmountOfRecords={props.totalAmountOfRecords}
                             currentPage={props.page}
@@ -43,13 +48,15 @@ export default function IndexEntities<T>(props: IndexEntitiesProps<T>){
                             }}
                             recordsPerPageOptions={[5,20,50]}/>
                     </div>
-                    <GeneriscList list={props.entities}>
-                        <table className="table tabel-hover align-middle shadow-sm border rounded overflow-hidden">
-                             {props.children(props.entities!, buildButtons)}
-                        </table>
+                    <GeneriscList list={props.entities} emptyListUI={<div className="empty-state"><span className="bi bi-inbox" aria-hidden="true"></span><p>No records found.</p></div>}>
+                        <div className="table-wrap">
+                            <table className="table table-hover align-middle">
+                                 {props.children(props.entities!, buildButtons)}
+                            </table>
+                        </div>
                     </GeneriscList>
                 </>}
-            </>
+            </section>
         )
     
 }

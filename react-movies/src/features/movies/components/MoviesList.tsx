@@ -8,7 +8,7 @@ export default function MovieList(props: MovieListProps){
    return (
    <GeneriscList list={props.movies}
 
-    emptyListUI={<>there are no movies to display</>}
+    emptyListUI={<div className="empty-state"><span className="bi bi-film" aria-hidden="true"></span><p>No films are available yet.</p></div>}
     >
         <div className={styles.div}>
             {props.movies?.map(movie=><DisplayMovie key={movie.id} movie={movie}/>)}

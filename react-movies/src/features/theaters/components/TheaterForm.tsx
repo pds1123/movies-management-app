@@ -34,14 +34,18 @@ export default function TheaterForm(props: TheaterFormProps){
     return (
         <>
             <DisplayErrors errors={props.errors} />
-            <form onSubmit={handleSubmit(props.onSubmit)}>
+            <form className="admin-form admin-form-wide" onSubmit={handleSubmit(props.onSubmit)}>
                 <div className="form-group">
                     <label htmlFor="name">Name</label>
                     <input id="name" autoComplete="off" className="form-control" {...register('name')} />
                     {errors.name && <p className="error">{errors.name.message}</p>}
                 </div>
 
-                <div className="mt-4">
+                <div className="map-field">
+                    <div className="field-heading">
+                        <label>Location</label>
+                        <span>Select a point on the map</span>
+                    </div>
                     <Map coordinates={transformCoordinate()} setCoordinate={coordinate => {
                         setValue('latitude', coordinate.lat,{shouldValidate: true})
                     
@@ -51,12 +55,12 @@ export default function TheaterForm(props: TheaterFormProps){
                     } allowClicks={true} />
                 </div>
 
-                <div className="mt-2">
+                <div className="form-actions">
                     <Button
                         type="submit" disabled={!isValid || isSubmitting}
-                    >{isSubmitting ? 'Sending...' : 'Send'}
+                    >{isSubmitting ? 'Saving...' : 'Save cinema'}
                     </Button>
-                    <NavLink to="/theaters" className="btn btn-secondary ms-2">Cancel</NavLink>
+                    <NavLink to="/theaters" className="btn btn-link">Cancel</NavLink>
                 </div>
 
             </form>

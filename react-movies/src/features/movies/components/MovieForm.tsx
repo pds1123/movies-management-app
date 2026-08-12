@@ -53,10 +53,11 @@ export default function MovieForm(props: MovieFormProps){
     return (
         <>
             <DisplayErrors errors={props.errors}/>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="form-group">
+            <form className="admin-form admin-form-wide movie-form" onSubmit={handleSubmit(onSubmit)}>
+                <div className="form-grid">
+                <div className="form-group form-field-full">
                     <label htmlFor="title">Title</label>
-                    <input id="title" autoComplete="off" className="form-control" {...register('title')} />
+                    <input id="title" placeholder="e.g. Paris, Texas (1984)" autoComplete="off" className="form-control" {...register('title')} />
                     {errors.title && <p className="error">{errors.title.message}</p>}
                 </div>
 
@@ -72,10 +73,12 @@ export default function MovieForm(props: MovieFormProps){
                     {errors.trailer && <p className="error">{errors.trailer.message}</p>}
                 </div>
 
+                </div>
+
                 <SelectImage imageURL={currentImageURL} selectedImage={image => setValue('poster', image)} />
 
-                <div className="form-group">
-                    <label>Genres:</label>
+                <div className="form-group selection-field">
+                    <label>Genres</label>
                     <MultipleSelection selected={selectedGenres} nonSelected={nonSelectedGenres} 
                     onChange={(selected, nonSelected) => {
                         setSelectedGenres(selected);
@@ -83,8 +86,8 @@ export default function MovieForm(props: MovieFormProps){
                     }}/>
                 </div>
                 
-                <div className="form-group">
-                    <label>Theaters:</label>
+                <div className="form-group selection-field">
+                    <label>Theaters</label>
                     <MultipleSelection selected={selectedTheaters} nonSelected={nonSelectedTheaters}
                         onChange={(selected, nonSelected) => {
                             setSelectedTheaters(selected);
@@ -92,7 +95,7 @@ export default function MovieForm(props: MovieFormProps){
                         }} />
                 </div>
 
-                <div className="form-group">
+                <div className="form-group actor-field">
                     <TypeaheadActors 
                         actors={selectedActors}
                         onAdd={actors => {
@@ -115,9 +118,9 @@ export default function MovieForm(props: MovieFormProps){
                     />
                 </div>
                 
-                <div className="mt-2">
-                    <Button type="submit" disabled={!isValid || isSubmitting}>{isSubmitting ? "Sending" : "Send"}</Button>
-                    <NavLink to="/" className="btn btn-secondary ms-2">Cancel</NavLink>
+                <div className="form-actions">
+                    <Button type="submit" disabled={!isValid || isSubmitting}>{isSubmitting ? "Saving..." : "Save film"}</Button>
+                    <NavLink to="/" className="btn btn-link">Cancel</NavLink>
                 </div>
             </form>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router"
+import { NavLink, useParams } from "react-router"
 import apiClient from "../../../api/apiClient";
 import type Movie from "../models/movie.model";
 import Loading from "../../../components/Loading";
@@ -21,14 +21,22 @@ export default function MovieDetail() {
         return <Loading />
     }
 
-    const date = new Date(movie.releaseDate);
-    const year = date.getFullYear();
-    const dateFormatted = date.toLocaleDateString();
+    const dateFormatted = new Intl.DateTimeFormat('en-NZ', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    }).format(new Date(movie.releaseDate));
 
     function getYoutubeEmbedURL(url: string): string | undefined {
-        const objUrl = new URL(url);
-        const videoId = objUrl.searchParams.get('v');
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : undefined;
+        try {
+            const objUrl = new URL(url);
+            const videoId = objUrl.hostname === 'youtu.be'
+                ? objUrl.pathname.slice(1)
+                : objUrl.searchParams.get('v');
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : undefined;
+        } catch {
+            return undefined;
+        }
     }
 
     function transformCoordinates(): Coordinate[]{
@@ -39,56 +47,59 @@ export default function MovieDetail() {
     }
 
     return (
-        <>
-            <div className="container my-4">
-                <h2>{movie.title} <small className="text-muted">({year})</small></h2>
+        <article className="film-detail">
+            <NavLink to="/" className="back-link"><span aria-hidden="true">←</span> Back to programme</NavLink>
 
-                {movie.genres && movie.genres.length > 0 && (
-                    <div className="mb-2">
-                        {movie.genres.map(genre => <span key={genre.id} className="badge bg-primary me-2">
-                            {genre.name}
-                        </span>)}
-                    </div>
-                )}
-
-                <p className="text-muted">Release date: {dateFormatted}</p>
-
-                <div className="d-flex">
-                    <span className="d-inline-block me-4">
-                        <img src={movie.poster} style={{ width: '225px', height: '315px' }} />
-                    </span>
-                    <div>
-                        <iframe width="565" height="315" title="trailer" allowFullScreen
-                            src={getYoutubeEmbedURL(movie.trailer)}>
-
-                        </iframe>
-                    </div>
+            <header className="film-detail-header">
+                <div>
+                    <p className="film-release">At FRAME from {dateFormatted}</p>
+                    <h1>{movie.title}</h1>
                 </div>
 
+                {movie.genres && movie.genres.length > 0 && (
+                    <div className="genre-list" aria-label="Genres">
+                        {movie.genres.map(genre => <span key={genre.id}>{genre.name}</span>)}
+                    </div>
+                )}
+            </header>
+
+            <div className="film-media-grid">
+                <img className="film-poster" src={movie.poster} alt={`${movie.title} poster`} />
+                {getYoutubeEmbedURL(movie.trailer) ? (
+                    <div className="trailer-frame">
+                        <iframe title={`${movie.title} trailer`} allowFullScreen
+                            src={getYoutubeEmbedURL(movie.trailer)}>
+                        </iframe>
+                    </div>
+                ) : (
+                    <div className="trailer-unavailable"><span className="bi bi-play-circle" aria-hidden="true"></span><p>Trailer unavailable</p></div>
+                )}
+            </div>
+
                 {movie.actors && movie.actors.length > 0 && (
-                    <div>
-                        <h4>Actors</h4>
-                        <div className="row">
+                    <section className="cast-section" aria-labelledby="cast-title">
+                        <h2 id="cast-title">Cast</h2>
+                        <div className="cast-list">
                             {movie.actors.map(actor => (
-                                <div key={actor.id} className="col-md-4 d-flex mb-3">
-                                    <img src={actor.picture} alt={actor.name} className="rounded me-3" 
-                                        style={{width: '80px', height: '100px'}}/>
+                                <div key={actor.id} className="cast-member">
+                                    <img src={actor.picture} alt="" />
                                         <div>
                                             <strong>{actor.name}</strong>
-                                            <br />
-                                            <span className="text-muted">{actor.character}</span>
+                                            <span>{actor.character}</span>
                                         </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {movie.theaters && movie.theaters.length > 0 && <div style={{width: '100%'}}>
-                        <h2>Showing in the following theaters:</h2>
+                {movie.theaters && movie.theaters.length > 0 && <section className="cinema-map" aria-labelledby="cinema-map-title">
+                        <div className="section-heading">
+                            <h2 id="cinema-map-title">Where it’s showing</h2>
+                            <p>{movie.theaters.map(theater => theater.name).join(' · ')}</p>
+                        </div>
                         <Map coordinates={transformCoordinates()} allowClicks={false} />
-                    </div>}
-            </div>
-        </>
+                    </section>}
+        </article>
     )
 }

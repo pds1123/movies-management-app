@@ -25,7 +25,7 @@ export default function ActorForm(props: ActorFormProps){
     return(
         <>
             <DisplayErrors errors={props.errors} />
-            <form onSubmit={handleSubmit(props.onSubmit)}>
+            <form className="admin-form" onSubmit={handleSubmit(props.onSubmit)}>
                 <div className="form-group">
                     <label htmlFor="name">Name</label>
                     <input id="name" autoComplete="off" className="form-control" {...register('name')} />
@@ -40,12 +40,12 @@ export default function ActorForm(props: ActorFormProps){
 
                 <SelectImage imageURL={currentImageURL} selectedImage={file => setValue('picture', file)}/>
 
-                <div className="mt-2">
+                <div className="form-actions">
                     <Button
                         type="submit" disabled={!isValid || isSubmitting}
-                    >{isSubmitting ? 'Sending...' : 'Send'}
+                    >{isSubmitting ? 'Saving...' : 'Save person'}
                     </Button>
-                    <NavLink to="/actors" className="btn btn-secondary ms-2">Cancel</NavLink>
+                    <NavLink to="/actors" className="btn btn-link">Cancel</NavLink>
                 </div>
             </form>
         </>

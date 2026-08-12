@@ -26,10 +26,11 @@ export default function SelectImage(props: SelectImageProps){
     }
 
     return (
-        <div className="form-group">
-            <label>Select Image</label>
-            <div>
-                <input type="file" accept=".jpg,.jpeg,.png" onChange={handelOnChange} />
+        <div className="form-group image-field">
+            <label htmlFor="image-upload">Image</label>
+            <p className="field-help">JPG or PNG. Use a portrait image for film posters.</p>
+            <div className="file-input-wrap">
+                <input id="image-upload" type="file" accept=".jpg,.jpeg,.png" onChange={handelOnChange} />
             </div>
             {imageBase64 ? <div>
                 <div className={styles.div}>

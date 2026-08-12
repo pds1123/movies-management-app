@@ -47,7 +47,8 @@ export default function TypeaheadActors(props: TypeaheadActorsProps){
     
     return (
         <>
-            <label>Actors</label>
+            <label>Cast</label>
+            <p className="field-help">Search for people, add their role, then drag to change billing order.</p>
             <AsyncTypeahead
                 isLoading={loading}
                 onSearch={handleSearch}
@@ -63,7 +64,7 @@ export default function TypeaheadActors(props: TypeaheadActorsProps){
                     const actor = option as MovieActor;
                     return actor.name;
                 }}
-                placeholder="Write the name of the actor..."
+                placeholder="Search by name"
                 minLength={2}
                 selected={selection}
                 flip={true}
@@ -80,19 +81,19 @@ export default function TypeaheadActors(props: TypeaheadActorsProps){
                 }}
             />
 
- <ul className="list-group">
+ <ul className="cast-editor">
                 {props.actors.map(actor => <li 
                 draggable={true}
                 onDragStart={() => handleDragStart(actor)}
                 onDragOver={() => handleDragOver(actor)}
                 key={actor.id}
-                className="list-group-item d-flex align-items-center"
+                className="cast-editor-item"
                 >
-                    <div style={{width: '70px'}}>
-                        <img alt="picture" style={{height: '60px'}} src={actor.picture} />
+                    <div className="cast-editor-image">
+                        <img alt="" src={actor.picture} />
                     </div>
 
-                    <div style={{width: '150px', marginLeft: '1rem'}}>
+                    <div className="cast-editor-name">
                         {actor.name}
                     </div>
 
@@ -103,12 +104,13 @@ export default function TypeaheadActors(props: TypeaheadActorsProps){
                         />
                     </div>
 
-                    <span role="button"
-                    className="badge text-bg-secondary"
+                    <button type="button"
+                    className="icon-button"
+                    aria-label={`Remove ${actor.name}`}
                     onClick={() => props.onRemove(actor)}
                     >
-                        X
-                    </span>
+                        <i className="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
                 </li>)}
             </ul>
         </>

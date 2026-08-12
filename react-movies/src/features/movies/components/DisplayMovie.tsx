@@ -17,24 +17,30 @@ export default function DisplayMovie(props: DisplayMovieProps){
         await apiClient.delete(`/movies/${props.movie.id}`);
         alert();
     }
+
+    const releaseDate = new Intl.DateTimeFormat('en-NZ', {
+        day: 'numeric',
+        month: 'short'
+    }).format(new Date(props.movie.releaseDate));
     
     return (
-        <div className={styles.div}>
-            <NavLink to={buildLink()}>
-                <img src={props.movie.poster} alt="Poster" />
+        <article className={styles.movie}>
+            <NavLink to={buildLink()} className={styles.posterLink} aria-label={`View ${props.movie.title}`}>
+                <img src={props.movie.poster} alt={`${props.movie.title} poster`} loading="lazy" />
             </NavLink>
-            <p>
-                <NavLink to={buildLink()}>{props.movie.title}</NavLink>
-            </p>
-            <div>
+            <div className={styles.details}>
+                <p className={styles.date}>From {releaseDate}</p>
+                <h3><NavLink to={buildLink()}>{props.movie.title}</NavLink></h3>
+            </div>
+            <div className={styles.adminActions}>
                 <Authorized claims={['isadmin']}
                     authorized={<>
-                        <NavLink to={`/movies/edit/${props.movie.id}`} className='btn btn-primary'>Edit</NavLink>
-                        <Button className="btn btn-danger ms-4" onClick={() => customConfirm(() => deleteMovie())}>Delete</Button>
+                        <NavLink to={`/movies/edit/${props.movie.id}`} className='btn btn-sm btn-outline-primary'>Edit</NavLink>
+                        <Button className="btn btn-sm btn-outline-danger" onClick={() => customConfirm(() => deleteMovie())}>Delete</Button>
                     </>}
                 />
             </div>
-        </div>
+        </article>
     )
 
 }

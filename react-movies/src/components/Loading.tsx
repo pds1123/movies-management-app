@@ -1,5 +1,3 @@
-import loading from './../assets/loading.gif'
-
 export default function Loading(){
-    return <img alt="loading" src={loading} />
+    return <div className="loading-state" role="status"><span className="loading-mark" aria-hidden="true"></span><span>Loading</span></div>
 }

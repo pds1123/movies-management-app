@@ -1,7 +1,9 @@
 .div {
-    margin-top: 1rem;
+    margin-top: 16px;
 }
 
 .div img {
-    width: 225px;
+    width: min(225px, 100%);
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
 }

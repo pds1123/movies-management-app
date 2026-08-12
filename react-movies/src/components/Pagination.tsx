@@ -11,13 +11,14 @@ export default function Pagination(props: PaginationProps){
         }
     }
 
+    if (amoutOfPages === 0) return null;
+
     return (
         <>
-            <div className="text-center">
-                <div className="row align-items-start justify-content-center">
-                    <div className="col-auto">
+            <div className="pagination-bar">
+                    <div className="pagination-size">
                         <div className="d-flex align-items-center gap-2">
-                            <label className="mb-0">Records per page:</label>
+                            <label className="mb-0">Films per page</label>
                             <select 
                             onChange={e=> props.onPaginateChange(1, parseInt(e.target.value,10))}
                             className="form-select form-select-sm w-auto">
@@ -25,13 +26,13 @@ export default function Pagination(props: PaginationProps){
                             </select>
                         </div>
                     </div>
-                    <div className="col-auto">
+                    <nav aria-label="Pagination">
                         <ul className="pagination justify-content-center mb-0">
                             <li className= {`page-item ${props.currentPage === 1 ? 'disabled' : ''}`}>
                                 <button className="page-link"
                                 onClick={() => props.onPaginateChange(props.currentPage - 1, props.recordsPerPage)}
                                 >
-                                    Previous
+                                    <span aria-hidden="true">←</span> Previous
                                 </button>
                             </li >
                             {pages.map(page => (
@@ -45,12 +46,11 @@ export default function Pagination(props: PaginationProps){
                                 <button className="page-link" 
                                 onClick={() => props.onPaginateChange(props.currentPage + 1, props.recordsPerPage)}
                                 >
-                                    Next
+                                    Next <span aria-hidden="true">→</span>
                                 </button>
                             </li>
                         </ul>
-                    </div>
-                </div>
+                    </nav>
             </div>
         </>
     )

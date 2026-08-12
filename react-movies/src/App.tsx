@@ -5,6 +5,7 @@ import AuthenticationContext from "./features/security/utils/AuthenticationConte
 import { useState, useEffect } from "react";
 import type Claim from "./features/security/models/Claim.model";
 import { getClaims } from "./features/security/utils/HandleJWT"
+import "./App.css";
 
 function App() {
 
@@ -20,17 +21,16 @@ function App() {
 
   
   return (
-    <>
     <BrowserRouter>
       <AuthenticationContext.Provider value={{claims, update: updateClaims}}>
         <Menu />
-          <div className="container mb2">
+          <main className="site-main">
+            <div className="site-container">
               <AppRoutes />
-          </div>
-    
+            </div>
+          </main>
       </AuthenticationContext.Provider>
-  </BrowserRouter>
-    </>
+    </BrowserRouter>
   )
 }
 

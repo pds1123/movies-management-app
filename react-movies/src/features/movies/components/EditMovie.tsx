@@ -65,7 +65,7 @@ export default function EditMovie(){
     return (
         
         <>
-            <h3>Edit Movie: {id}</h3>
+            <h3>Edit Movie</h3>
             {model && moviesPutGet ?  <MovieForm errors={errors} model={model} onSubmit={onSubmit}
                 selectedGenres={moviesPutGet.selectedGenres}
                 nonSelectedGenres={moviesPutGet.nonSelectedGenres}

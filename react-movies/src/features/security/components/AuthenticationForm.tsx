@@ -7,7 +7,7 @@ import type AuthenticationResponse from "../models/AuthenticationResponse.model"
 import { getClaims, storeToken } from "../utils/HandleJWT";
 import { useContext, useState } from "react";
 import AuthenticationContext from "../utils/AuthenticationContext";
-import { NavLink, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import extractIdentityErrors from "../utils/extractIdentityErrors";
 import type { AxiosError } from "axios";
 import DisplayErrors from "../../../components/DisplayErrors";
@@ -39,28 +39,27 @@ export default function AuthenticationForm(props: AuthenticationFormProps) {
         }
 
     return (
-        <>
+        <div className="auth-form-wrap">
             <DisplayErrors errors={myErrors} />
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
                 <div className="form-group">
                     <label htmlFor="email">Email</label>
-                    <input type="email" id="email" className="form-control" autoComplete="off" {...register('email')} />
+                    <input type="email" id="email" className="form-control" autoComplete="email" {...register('email')} />
                     {errors.email && <p className="error">{errors.email.message}</p>}
                 </div>
 
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
-                    <input type="password" id="password" className="form-control" autoComplete="off" 
+                    <input type="password" id="password" className="form-control" autoComplete={props.url.includes('login') ? 'current-password' : 'new-password'}
                     {...register('password')} />
                     {errors.password && <p className="error">{errors.password.message}</p>}
                 </div>
-                <div className="mt-2">
+                <div className="form-actions">
                     <Button type="submit" disabled={!isValid || isSubmitting}>
-                        {isSubmitting ? 'Sending...' : 'Send'}</Button>
-                        <NavLink className="btn btn-secondary ms-2" to="/">Cancel</NavLink>
+                        {isSubmitting ? 'Please wait...' : props.url.includes('login') ? 'Sign in' : 'Create account'}</Button>
                 </div>
             </form>
-        </>
+        </div>
     )
 
 }

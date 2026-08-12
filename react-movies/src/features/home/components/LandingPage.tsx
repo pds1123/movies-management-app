@@ -19,15 +19,22 @@ export default function LandingPage() {
     }
 
     return (
-        <>
+        <div className="programme-page">
             <AlertContext.Provider value={() => loadRecords()}>
-                
-                <h3>In Theaters</h3>
-                <MoviesList movies={movies.inTheaters} />
+                <section className="programme-section" aria-labelledby="now-showing-title">
+                    <div className="section-heading">
+                        <h2 id="now-showing-title">In Theaters</h2>
+                    </div>
+                    <MoviesList movies={movies.inTheaters} />
+                </section>
 
-                <h3>Upcoming Releases</h3>
-                <MoviesList movies={movies.upcomingReleases} />
+                <section className="programme-section programme-section-upcoming" aria-labelledby="coming-soon-title">
+                    <div className="section-heading">
+                        <h2 id="coming-soon-title">Upcoming Releases</h2>
+                    </div>
+                    <MoviesList movies={movies.upcomingReleases} />
+                </section>
             </AlertContext.Provider>
-        </>
+        </div>
     )
 }

@@ -13,8 +13,8 @@ export default function Map(props: MapProps){
     
     return (
         <MapContainer center={[-36.85,174.76]}
-        zoom={14} scrollWheelZoom={true} style={{height: '500px'}}>
-            <TileLayer attribution="React Movies"
+        zoom={14} scrollWheelZoom={true} className="frame-map">
+            <TileLayer attribution="FRAME CINEMAS · OpenStreetMap"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             {props.allowClicks ? <HandleMapClick setCoordinate={handleCoordinate} /> : undefined}

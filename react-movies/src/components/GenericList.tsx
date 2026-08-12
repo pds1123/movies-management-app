@@ -6,7 +6,7 @@ export default function GeneriscList<T>(props: GeneriscList<T>){
     if(!props.list){
         return props.loadingUI ? props.loadingUI : <Loading />
     } else if (props.list.length === 0){
-        return props.loadingUI ? props.emptyListUI : 'there are no elements to display'
+        return props.emptyListUI ?? <div className="empty-state"><p>There are no items to display.</p></div>
     } else {
         return props.children;
     }
