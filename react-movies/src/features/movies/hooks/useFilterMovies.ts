@@ -7,7 +7,8 @@ import type Movie from "../models/movie.model";
 import type { UseFormSetValue } from "react-hook-form";
 
 export function useFilterMovies(initialValues: FilterMoviesDTO, setValue: UseFormSetValue<FilterMoviesDTO>){
-      const [genres, setGenres] = useState<Genre[]>([]);
+        const [genres, setGenres] = useState<Genre[]>([]);
+        const [genresLoaded, setGenresLoaded] = useState(false);
         const [movies, setMovies] = useState<Movie[]>();
         const [searchParams, setSearchParams] = useSearchParams();
         const [page, setPage] = useState(searchParams.has('page') ? parseInt(searchParams.get('page')!, 10) : 1);
@@ -16,11 +17,13 @@ export function useFilterMovies(initialValues: FilterMoviesDTO, setValue: UseFor
         const [totalAmountOfRecords, setTotalAmountOfRecords] = useState(0);
     
         useEffect(() => {
-            apiClient.get<Genre[]>('/genres/all').then(res => setGenres(res.data))
+            apiClient.get<Genre[]>('/genres/all')
+                .then(res => setGenres(res.data))
+                .finally(() => setGenresLoaded(true));
         }, [])
     
         useEffect(() => {
-            if (genres.length === 0) {
+            if (!genresLoaded) {
                 return;
             }
     
@@ -47,14 +50,19 @@ export function useFilterMovies(initialValues: FilterMoviesDTO, setValue: UseFor
             loadRecords(initialValues);
     
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [genres, page, recordsPerPage])
+        }, [genresLoaded, page, recordsPerPage])
     
         async function loadRecords(values: FilterMoviesDTO) {
             modifyURL(values);
-            const response = await apiClient.get<Movie[]>('/movies/filter', { params: { ...values, page, recordsPerPage } });
-            setMovies(response.data);
-            const totalAmountOfRecords = parseInt(response.headers['total-records-count'], 10);
-            setTotalAmountOfRecords(totalAmountOfRecords);
+            try {
+                const response = await apiClient.get<Movie[]>('/movies/filter', { params: { ...values, page, recordsPerPage } });
+                setMovies(response.data);
+                const totalAmountOfRecords = parseInt(response.headers['total-records-count'], 10);
+                setTotalAmountOfRecords(Number.isNaN(totalAmountOfRecords) ? 0 : totalAmountOfRecords);
+            } catch {
+                setMovies([]);
+                setTotalAmountOfRecords(0);
+            }
         }
 
          function modifyURL(values: FilterMoviesDTO) {
