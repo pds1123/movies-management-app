@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -25,7 +26,9 @@ builder.Services.AddOutputCache( option=>
 });
 // Add services to the container.
 
-var allowedOrigins = builder.Configuration.GetValue<string>("AllowedOrigins")!.Split(",");
+var allowedOrigins = builder.Configuration.GetValue<string>("AllowedOrigins")?
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? ["http://localhost:5173", "http://127.0.0.1:5173"];
 
 builder.Services.AddCors(options =>
 {
@@ -60,12 +63,24 @@ builder.Services.AddSingleton(provider => new MapperConfiguration(config =>
 {
     var geometryFactory = provider.GetRequiredService<GeometryFactory>();
     config.AddProfile(new AutoMapperProfiles(geometryFactory));
-}).CreateMapper());
+}, provider.GetRequiredService<ILoggerFactory>()).CreateMapper());
 
-//builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
-
-builder.Services.AddTransient<IFileStorage, LocalFileStorage>();
+if (builder.Configuration.GetValue<bool>("UseAzureFileStorage"))
+{
+    builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
+}
+else
+{
+    builder.Services.AddTransient<IFileStorage, LocalFileStorage>();
+}
 builder.Services.AddTransient<IUsersService, UsersService>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
+builder.Services.AddHealthChecks();
 
 
 //builder.Services.AddAutoMapper(typeof(Program));
@@ -112,6 +127,13 @@ if (useInMemoryDatabase)
 {
     await LocalDevelopmentDataSeeder.SeedAsync(app.Services, app.Configuration);
 }
+else if (builder.Configuration.GetValue<bool>("ApplyMigrations"))
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+    await BootstrapAdminSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -119,6 +141,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseForwardedHeaders();
 
 app.UseCors();
 
@@ -131,8 +155,10 @@ if (builder.Configuration.GetValue("UseHttpsRedirection", true))
 
 app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

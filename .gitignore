@@ -8,6 +8,7 @@ react-movies/.env.*.local
 
 # Backend
 .dotnet/
+.azure/
 MoviesAPI/bin/
 MoviesAPI/obj/
 MoviesAPI/*.log
