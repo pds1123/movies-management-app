@@ -3,6 +3,7 @@ react-movies/node_modules/
 react-movies/dist/
 react-movies/dist-ssr/
 react-movies/*.log
+react-movies/.env
 react-movies/.env.local
 react-movies/.env.*.local
 
@@ -11,10 +12,15 @@ react-movies/.env.*.local
 .azure/
 MoviesAPI/bin/
 MoviesAPI/obj/
+MoviesAPI.Tests/bin/
+MoviesAPI.Tests/obj/
 MoviesAPI/*.log
 MoviesAPI/appsettings.Development.json
+# Runtime uploads; existing committed demo assets remain tracked.
+MoviesAPI/wwwroot/movies/*
 
 # User/editor files
+local/
 .vs/
 .vscode/
 .idea/

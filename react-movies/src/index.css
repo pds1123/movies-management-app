@@ -1,7 +1,7 @@
 :root {
-  font-family: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Atkinson Hyperlegible Next", "Helvetica Neue", Arial, sans-serif;
   color: oklch(0.18 0.018 205);
-  background: oklch(1 0 0);
+  background: oklch(0.985 0.006 200);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -18,7 +18,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: oklch(1 0 0);
+  background: oklch(0.985 0.006 200);
 }
 
 button,

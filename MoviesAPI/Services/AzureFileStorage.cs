@@ -1,6 +1,5 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using System.Data.Common;
 
 namespace MoviesAPI.Services
 {
@@ -21,7 +20,7 @@ namespace MoviesAPI.Services
             }
 
             var client = new BlobContainerClient(connectionString, container);
-            await client.CreateIfNotExistsAsync();
+            await client.CreateIfNotExistsAsync(PublicAccessType.Blob);
             var fileName = Path.GetFileName(route);
             var blob = client.GetBlobClient(fileName);
             await blob.DeleteIfExistsAsync();
@@ -29,15 +28,18 @@ namespace MoviesAPI.Services
         public async Task<string> Store(string container, IFormFile file)
         {
             var client = new BlobContainerClient(connectionString, container);
-            await client.CreateIfNotExistsAsync();
-            client.SetAccessPolicy(PublicAccessType.Blob);
+            await client.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
-            var extension=Path.GetExtension(file.FileName);
+            var extension = Path.GetExtension(file.FileName);
             var fileName = $"{Guid.NewGuid()}{extension}";
-            var blob=client.GetBlobClient(fileName);
-            var blobHttpHeaders = new BlobHttpHeaders();
-            blobHttpHeaders.ContentType=file.ContentType;
-            await blob.UploadAsync(file.OpenReadStream(),blobHttpHeaders);
+            var blob = client.GetBlobClient(fileName);
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders { ContentType = file.ContentType }
+            };
+
+            await using var input = file.OpenReadStream();
+            await blob.UploadAsync(input, options);
             return blob.Uri.ToString();
 
         }

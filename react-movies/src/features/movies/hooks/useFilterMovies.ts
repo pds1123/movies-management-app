@@ -37,13 +37,13 @@ export function useFilterMovies(initialValues: FilterMoviesDTO, setValue: UseFor
                 setValue('genreId', initialValues.genreId);
             }
     
-             if (searchParams.has('upcomingReleases')){
-                initialValues.upcomingReleases = Boolean(searchParams.get('upcomingReleases')!);
+            if (searchParams.has('upcomingReleases')){
+                initialValues.upcomingReleases = searchParams.get('upcomingReleases') === 'true';
                 setValue('upcomingReleases', initialValues.upcomingReleases);
             }
     
             if (searchParams.has('inTheaters')){
-                initialValues.inTheaters = Boolean(searchParams.get('inTheaters')!);
+                initialValues.inTheaters = searchParams.get('inTheaters') === 'true';
                 setValue('inTheaters', initialValues.inTheaters);
             }
     

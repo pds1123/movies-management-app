@@ -1,13 +1,20 @@
 .movie {
-    min-width: 0;
+  min-width: 0;
+  transition: transform 260ms var(--frame-ease);
+}
+
+.movie:hover {
+  transform: translateY(-4px);
 }
 
 .posterLink {
     position: relative;
     display: block;
-    overflow: hidden;
-    aspect-ratio: 2 / 3;
-    background: var(--frame-surface);
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+  background: var(--frame-surface);
+  box-shadow: 0 3px 7px oklch(0.13 0.02 201 / 0.16);
 }
 
 .posterLink::after {
@@ -21,7 +28,7 @@
 
 .posterLink:hover::after,
 .posterLink:focus-visible::after {
-    border-width: 6px;
+    border-width: 5px;
 }
 
 .posterLink img {
@@ -36,20 +43,24 @@
 }
 
 .details {
-    padding-top: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    padding-top: 18px;
 }
 
 .date {
+    grid-column: 1 / -1;
     margin: 0 0 6px;
-    color: var(--frame-primary);
-    font-size: 0.72rem;
+    color: var(--frame-accent-dark);
+    font-size: 0.76rem;
     font-weight: 750;
 }
 
 .details h3 {
     margin: 0;
-    font-size: clamp(1.2rem, 2vw, 1.55rem);
-    line-height: 1.08;
+    font-size: clamp(1.35rem, 2vw, 1.72rem);
+    line-height: 1.02;
 }
 
 .details h3 a {
@@ -59,6 +70,23 @@
 
 .details h3 a:hover {
     color: var(--frame-primary);
+}
+
+.viewCue {
+    align-self: end;
+    color: var(--frame-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: color 180ms var(--frame-ease);
+}
+
+.viewCue span {
+    color: var(--frame-accent-dark);
+}
+
+.movie:hover .viewCue {
+    color: var(--frame-ink);
 }
 
 .adminActions {

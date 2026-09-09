@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using MoviesAPI.DTOs;
 using System.IdentityModel.Tokens.Jwt;
@@ -47,6 +48,7 @@ namespace MoviesAPI.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting("auth")]
         public async Task<ActionResult<AuthenticationResponseDTO>> Register(UserCredentialsDTO userCredentialsDTO)
         {
             var user = new IdentityUser
@@ -70,6 +72,7 @@ namespace MoviesAPI.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting("auth")]
         public async Task<ActionResult<AuthenticationResponseDTO>> Login(UserCredentialsDTO userCredentialsDTO)
         {
             var user = await userManager.FindByEmailAsync(userCredentialsDTO.Email);
@@ -81,7 +84,7 @@ namespace MoviesAPI.Controllers
             }
 
             var result = await signInManager.CheckPasswordSignInAsync(user,
-                userCredentialsDTO.Password, lockoutOnFailure: false);
+                userCredentialsDTO.Password, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
@@ -104,13 +107,28 @@ namespace MoviesAPI.Controllers
                 return NotFound();
             }
 
-            await userManager.AddClaimAsync(user, new Claim("isadmin", "true"));
+            var claims = await userManager.GetClaimsAsync(user);
+            if (!claims.Any(claim => claim.Type == "isadmin"))
+            {
+                await userManager.AddClaimAsync(user, new Claim("isadmin", "true"));
+            }
+
             return NoContent();
         }
 
         [HttpPost("removeadmin")]
         public async Task<IActionResult> RemoveAdmin(EditClaimDTO editClaimDTO)
         {
+            var currentUserEmail = User.FindFirstValue("email");
+            if (string.Equals(currentUserEmail, editClaimDTO.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "You cannot remove your own administrator access.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
             var user = await userManager.FindByEmailAsync(editClaimDTO.Email);
 
             if (user is null)
@@ -118,7 +136,15 @@ namespace MoviesAPI.Controllers
                 return NotFound();
             }
 
-            await userManager.RemoveClaimAsync(user, new Claim("isadmin", "true"));
+            var adminClaims = (await userManager.GetClaimsAsync(user))
+                .Where(claim => claim.Type == "isadmin")
+                .ToList();
+
+            if (adminClaims.Count > 0)
+            {
+                await userManager.RemoveClaimsAsync(user, adminClaims);
+            }
+
             return NoContent();
         }
 
@@ -134,8 +160,7 @@ namespace MoviesAPI.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim("email", user.Email!),
-                new Claim("whatever I want", "any value")
+                new Claim("email", user.Email!)
             };
 
             var claimsDB = await userManager.GetClaimsAsync(user);
@@ -145,9 +170,12 @@ namespace MoviesAPI.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwtkey"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddYears(1);
+            var expirationMinutes = configuration.GetValue("Jwt:ExpirationMinutes", 480);
+            var expiration = DateTime.UtcNow.AddMinutes(expirationMinutes);
+            var issuer = configuration["Jwt:Issuer"] ?? "MoviesAPI";
+            var audience = configuration["Jwt:Audience"] ?? "MoviesClient";
 
-            var securityToken = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
+            var securityToken = new JwtSecurityToken(issuer: issuer, audience: audience, claims: claims,
                 expires: expiration, signingCredentials: creds);
 
             var token = new JwtSecurityTokenHandler().WriteToken(securityToken);

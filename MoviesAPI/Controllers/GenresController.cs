@@ -79,15 +79,6 @@ namespace MoviesAPI.Controllers
 
         }
 
-        [HttpGet("{name}")] //  api/genres/comedy?id=7
-        [OutputCache(Tags = [cacheTag])]
-        public async Task<ActionResult<Genre>> Get(string name, [FromQuery] int id)
-        {
-            return new Genre {Id=id, Name = name };
-
-        }
-
-
         [HttpPost]
         public async Task< CreatedAtRouteResult> Post([FromBody] GenreCreationDTO genreCreationDTO)
         {

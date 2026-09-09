@@ -5,6 +5,7 @@ import type Movie from "../models/movie.model";
 import Loading from "../../../components/Loading";
 import type Coordinate from "../../../components/Map/coordinate.model";
 import Map from '../../../components/Map/Map';
+import resolveAssetUrl from "../../../utils/resolveAssetUrl";
 
 export default function MovieDetail() {
 
@@ -64,7 +65,7 @@ export default function MovieDetail() {
             </header>
 
             <div className="film-media-grid">
-                <img className="film-poster" src={movie.poster} alt={`${movie.title} poster`} />
+                <img className="film-poster" src={resolveAssetUrl(movie.poster)} alt={`${movie.title} poster`} />
                 {getYoutubeEmbedURL(movie.trailer) ? (
                     <div className="trailer-frame">
                         <iframe title={`${movie.title} trailer`} allowFullScreen
@@ -82,7 +83,7 @@ export default function MovieDetail() {
                         <div className="cast-list">
                             {movie.actors.map(actor => (
                                 <div key={actor.id} className="cast-member">
-                                    <img src={actor.picture} alt="" />
+                                    <img src={resolveAssetUrl(actor.picture)} alt="" />
                                         <div>
                                             <strong>{actor.name}</strong>
                                             <span>{actor.character}</span>

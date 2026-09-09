@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoviesAPI.utilities;
+using MoviesAPI.Validations;
 using System.ComponentModel.DataAnnotations;
 
 namespace MoviesAPI.DTOs
@@ -9,14 +10,17 @@ namespace MoviesAPI.DTOs
         [Required]
         [StringLength(300)]
         public required string Title { get; set; }
+        [Url]
+        [StringLength(500)]
         public string? Trailer { get; set; }
         public DateTime ReleaseDate { get; set; }
+        [ImageFile]
         public IFormFile? Poster { get; set; }
         [ModelBinder(BinderType = typeof(TypeBinder))]
-        public List<int>? GenresIds { get; set; }
+        public List<int> GenresIds { get; set; } = [];
         [ModelBinder(BinderType = typeof(TypeBinder))]
-        public List<int>? TheatersIds { get; set; }
+        public List<int> TheatersIds { get; set; } = [];
         [ModelBinder(BinderType = typeof(TypeBinder))]
-        public List<ActorMovieCreationDTO>? Actors { get; set; }
+        public List<ActorMovieCreationDTO> Actors { get; set; } = [];
     }
 }

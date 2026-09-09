@@ -1,27 +1,31 @@
+import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
-import IndexGenres from "./features/genres/components/IndexGenres";
 import LandingPage from "./features/home/components/LandingPage";
-import CreateGenre from "./features/genres/components/CreateGenre";
-import EditGenre from "./features/genres/components/EditGenre";
-import FilterMovies from "./features/movies/components/FilterMovies";
-import MovieDetail from "./features/movies/components/MovieDetail";
-import CreateMovie from "./features/movies/components/CreateMovie";
-import EditMovie from "./features/movies/components/EditMovie";
-import IndexActors from "./features/actors/components/IndexActors";
-import CreateActor from "./features/actors/components/CreateActor";
-import EditActor from "./features/actors/components/EditActor";
-import IndexTheaters from "./features/theaters/components/IndexTheaters";
-import CreateTheater from "./features/theaters/components/CreateTheater";
-import EditTheater from "./features/theaters/components/EditTheater";
 import HandleRouteNotFound from "./features/home/components/HandleRouteNotFound";
-import Register from "./features/security/components/Register";
-import Login from "./features/security/components/Login";
-import IndexUsers from "./features/security/components/IndexUsers";
 import ProtectRoute from "./features/security/components/ProtectRoute";
+import Loading from "./components/Loading";
+
+const IndexGenres = lazy(() => import("./features/genres/components/IndexGenres"));
+const CreateGenre = lazy(() => import("./features/genres/components/CreateGenre"));
+const EditGenre = lazy(() => import("./features/genres/components/EditGenre"));
+const FilterMovies = lazy(() => import("./features/movies/components/FilterMovies"));
+const MovieDetail = lazy(() => import("./features/movies/components/MovieDetail"));
+const CreateMovie = lazy(() => import("./features/movies/components/CreateMovie"));
+const EditMovie = lazy(() => import("./features/movies/components/EditMovie"));
+const IndexActors = lazy(() => import("./features/actors/components/IndexActors"));
+const CreateActor = lazy(() => import("./features/actors/components/CreateActor"));
+const EditActor = lazy(() => import("./features/actors/components/EditActor"));
+const IndexTheaters = lazy(() => import("./features/theaters/components/IndexTheaters"));
+const CreateTheater = lazy(() => import("./features/theaters/components/CreateTheater"));
+const EditTheater = lazy(() => import("./features/theaters/components/EditTheater"));
+const Register = lazy(() => import("./features/security/components/Register"));
+const Login = lazy(() => import("./features/security/components/Login"));
+const IndexUsers = lazy(() => import("./features/security/components/IndexUsers"));
 
 export default function AppRoutes(){
     return (
-  <Routes>
+        <Suspense fallback={<Loading />}>
+        <Routes>
             <Route path='/' element={<LandingPage />} />
 
             <Route element={<ProtectRoute claims={['isadmin']} />}>
@@ -54,5 +58,6 @@ export default function AppRoutes(){
             <Route path='*' element={<HandleRouteNotFound />} />
 
         </Routes>
+        </Suspense>
     )
 }

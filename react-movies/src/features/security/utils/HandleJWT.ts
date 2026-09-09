@@ -10,23 +10,24 @@ export function storeToken(authenticationResponse: AuthenticationResponse){
 }
 
 export function getClaims(): Claim[]{
-    const token = localStorage.getItem(tokenKey);
-    const expiration = localStorage.getItem(expirationKey);
+    const token = getToken();
 
-    if (!token || !expiration){
-        return [];
-    }
-
-    const expirationDate = new Date(expiration);
-
-    if (isNaN(expirationDate.getTime()) || expirationDate <= new Date()){
-        logout();
+    if (!token){
         return [];
     }
 
     try {
         const payloadBase64 = token.split('.')[1];
-        const payloadJson = atob(payloadBase64);
+        if (!payloadBase64) {
+            throw new Error('The stored token is malformed.');
+        }
+
+        const normalizedPayload = payloadBase64
+            .replace(/-/g, '+')
+            .replace(/_/g, '/')
+            .padEnd(Math.ceil(payloadBase64.length / 4) * 4, '=');
+        const payloadBytes = Uint8Array.from(atob(normalizedPayload), character => character.charCodeAt(0));
+        const payloadJson = new TextDecoder().decode(payloadBytes);
         const dataToken = JSON.parse(payloadJson);
 
         const claims: Claim[] = Object.entries(dataToken).map(([name, value]) => ({name, value: String(value)}));
@@ -46,7 +47,21 @@ export function logout(){
 }
 
 export function getToken(){
-    return localStorage.getItem(tokenKey);
+    const token = localStorage.getItem(tokenKey);
+    const expiration = localStorage.getItem(expirationKey);
+
+    if (!token || !expiration) {
+        return null;
+    }
+
+    const expirationDate = new Date(expiration);
+
+    if (Number.isNaN(expirationDate.getTime()) || expirationDate <= new Date()) {
+        logout();
+        return null;
+    }
+
+    return token;
 }
 
 export function userIsLoggedIn(){

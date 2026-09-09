@@ -1,8 +1,20 @@
 import type { AxiosError } from "axios";
 
 export default function extractError(obj: AxiosError): string[]{
-    const data = obj.response?.data as ErrorResponse;
-    const err = data.errors;
+    if (!obj.response) {
+        return ['The server could not be reached. Check your connection and try again.'];
+    }
+
+    if (obj.response.status === 429) {
+        return ['Too many requests. Wait a moment and try again.'];
+    }
+
+    const data = obj.response.data as Partial<ErrorResponse> | undefined;
+    const err = data?.errors;
+    if (!err) {
+        return ['The request could not be completed. Please try again.'];
+    }
+
     let messageWithErrors: string[] = [];
 
     for (const field in err){

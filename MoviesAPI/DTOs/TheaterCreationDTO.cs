@@ -4,6 +4,7 @@ namespace MoviesAPI.DTOs
 {
     public class TheaterCreationDTO
     {
+        [Required]
         [StringLength(75)]
         public required string Name { get; set; }
         [Range(-90, 90)]

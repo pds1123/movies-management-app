@@ -1,7 +1,10 @@
-﻿namespace MoviesAPI.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MoviesAPI.DTOs
 {
     public class PaginationDTO
     {
+        [Range(1, int.MaxValue)]
         public int Page { get; set; } = 1;
 
         private int recordsPerPage = 10;
@@ -12,7 +15,7 @@
             get { return recordsPerPage; }
             set
             {
-                recordsPerPage = (value > maximumAmountOfRecordsPerPage) ? maximumAmountOfRecordsPerPage : value;
+                recordsPerPage = Math.Clamp(value, 1, maximumAmountOfRecordsPerPage);
             } 
         }
     }

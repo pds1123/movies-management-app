@@ -7,6 +7,7 @@ import apiClient from "../../../api/apiClient";
 import { useContext } from "react";
 import AlertContext from "../../../utils/AlertContext";
 import Authorized from "../../security/components/Authorized";
+import resolveAssetUrl from "../../../utils/resolveAssetUrl";
 
 export default function DisplayMovie(props: DisplayMovieProps){
     
@@ -26,11 +27,14 @@ export default function DisplayMovie(props: DisplayMovieProps){
     return (
         <article className={styles.movie}>
             <NavLink to={buildLink()} className={styles.posterLink} aria-label={`View ${props.movie.title}`}>
-                <img src={props.movie.poster} alt={`${props.movie.title} poster`} loading="lazy" />
+                <img src={resolveAssetUrl(props.movie.poster)} alt={`${props.movie.title} poster`} loading="lazy" />
             </NavLink>
             <div className={styles.details}>
                 <p className={styles.date}>From {releaseDate}</p>
                 <h3><NavLink to={buildLink()}>{props.movie.title}</NavLink></h3>
+                <span className={styles.viewCue} aria-hidden="true">
+                    View film <span className="bi bi-arrow-up-right"></span>
+                </span>
             </div>
             <div className={styles.adminActions}>
                 <Authorized claims={['isadmin']}

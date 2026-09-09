@@ -35,23 +35,15 @@ namespace MoviesAPI.Services
             var fileName = $"{Guid.NewGuid()}{extension}";
             string folder = Path.Combine(env.WebRootPath, container);
 
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
+            Directory.CreateDirectory(folder);
 
             var route = Path.Combine(folder, fileName);
-            using (var ms = new MemoryStream())
-            {
-                await file.CopyToAsync(ms);
-                var content = ms.ToArray();
-                await File.WriteAllBytesAsync(route, content);
-            }
+            await using var output = new FileStream(
+                route, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+            await file.CopyToAsync(output);
 
             var request = httpContextAccessor.HttpContext!.Request;
-            var url = $"{request.Scheme}://{request.Host}";
-            var fileURL = Path.Combine(url, container, fileName).Replace("\\", "/");
-            return fileURL;
+            return $"{request.Scheme}://{request.Host}/{container}/{fileName}";
         }
     }
 }
