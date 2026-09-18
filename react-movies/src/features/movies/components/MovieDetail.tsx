@@ -6,6 +6,7 @@ import Loading from "../../../components/Loading";
 import type Coordinate from "../../../components/Map/coordinate.model";
 import Map from '../../../components/Map/Map';
 import resolveAssetUrl from "../../../utils/resolveAssetUrl";
+import YouTubePlayer from './YouTubePlayer';
 
 export default function MovieDetail() {
 
@@ -28,13 +29,12 @@ export default function MovieDetail() {
         month: 'long'
     }).format(new Date(movie.releaseDate));
 
-    function getYoutubeEmbedURL(url: string): string | undefined {
+    function getYoutubeVideoId(url: string): string | undefined {
         try {
             const objUrl = new URL(url);
-            const videoId = objUrl.hostname === 'youtu.be'
+            return objUrl.hostname === 'youtu.be'
                 ? objUrl.pathname.slice(1)
-                : objUrl.searchParams.get('v');
-            return videoId ? `https://www.youtube.com/embed/${videoId}` : undefined;
+                : objUrl.searchParams.get('v') ?? undefined;
         } catch {
             return undefined;
         }
@@ -66,11 +66,9 @@ export default function MovieDetail() {
 
             <div className="film-media-grid">
                 <img className="film-poster" src={resolveAssetUrl(movie.poster)} alt={`${movie.title} poster`} />
-                {getYoutubeEmbedURL(movie.trailer) ? (
+                {getYoutubeVideoId(movie.trailer) ? (
                     <div className="trailer-frame">
-                        <iframe title={`${movie.title} trailer`} allowFullScreen
-                            src={getYoutubeEmbedURL(movie.trailer)}>
-                        </iframe>
+                        <YouTubePlayer title={movie.title} videoId={getYoutubeVideoId(movie.trailer)!} videoUrl={movie.trailer} />
                     </div>
                 ) : (
                     <div className="trailer-unavailable"><span className="bi bi-play-circle" aria-hidden="true"></span><p>Trailer unavailable</p></div>
