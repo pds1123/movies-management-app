@@ -68,6 +68,7 @@ export default function Menu() {
                     <div className="nav-account">
                             <Authorized 
                                 authorized={<>
+                                    <NavLink to="/bookings" onClick={closeMenu}>My bookings</NavLink>
                                     <span className="account-name">Hello, {getUserName()}</span>
                                     <Button 
                                         className="nav-text-button"

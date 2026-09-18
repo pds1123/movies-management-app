@@ -160,7 +160,8 @@ namespace MoviesAPI.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim("email", user.Email!)
+                new Claim("email", user.Email!),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id)
             };
 
             var claimsDB = await userManager.GetClaimsAsync(user);

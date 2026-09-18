@@ -12,7 +12,7 @@ export default function extractError(obj: AxiosError): string[]{
     const data = obj.response.data as Partial<ErrorResponse> | undefined;
     const err = data?.errors;
     if (!err) {
-        return ['The request could not be completed. Please try again.'];
+        return [data?.title ?? 'The request could not be completed. Please try again.'];
     }
 
     let messageWithErrors: string[] = [];
@@ -27,6 +27,7 @@ export default function extractError(obj: AxiosError): string[]{
 }
 
 interface ErrorResponse{
+    title: string;
     errors: {
         [field: string]: string[]
     }

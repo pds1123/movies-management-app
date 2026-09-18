@@ -4,19 +4,43 @@ import styles from './DisplayMovie.module.css'
 import Button from "../../../components/Button";
 import customConfirm from "../../../utils/customConfirm";
 import apiClient from "../../../api/apiClient";
-import { useContext } from "react";
-import AlertContext from "../../../utils/AlertContext";
+import { useState } from "react";
 import Authorized from "../../security/components/Authorized";
 import resolveAssetUrl from "../../../utils/resolveAssetUrl";
+import Swal from "sweetalert2";
+import extractErrors from "../../../utils/extractErrors";
+import type { AxiosError } from "axios";
 
 export default function DisplayMovie(props: DisplayMovieProps){
     
     const buildLink = () => `/movie/${props.movie.id}`
-    const alert = useContext(AlertContext);
+    const [deleting, setDeleting] = useState(false);
 
     async function deleteMovie(){
-        await apiClient.delete(`/movies/${props.movie.id}`);
-        alert();
+        setDeleting(true);
+
+        try {
+            await apiClient.delete(`/movies/${props.movie.id}`);
+            setDeleting(false);
+            await props.onDeleted?.();
+            await Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Movie deleted',
+                text: `${props.movie.title} was removed.`,
+                showConfirmButton: false,
+                timer: 2200,
+                timerProgressBar: true
+            });
+        } catch (error) {
+            setDeleting(false);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Movie not deleted',
+                text: extractErrors(error as AxiosError).join(' ')
+            });
+        }
     }
 
     const releaseDate = new Intl.DateTimeFormat('en-NZ', {
@@ -40,7 +64,15 @@ export default function DisplayMovie(props: DisplayMovieProps){
                 <Authorized claims={['isadmin']}
                     authorized={<>
                         <NavLink to={`/movies/edit/${props.movie.id}`} className='btn btn-sm btn-outline-primary'>Edit</NavLink>
-                        <Button className="btn btn-sm btn-outline-danger" onClick={() => customConfirm(() => deleteMovie())}>Delete</Button>
+                        <Button className="btn btn-sm btn-outline-danger" disabled={deleting}
+                            onClick={() => customConfirm(
+                                () => void deleteMovie(),
+                                `Delete ${props.movie.title}?`,
+                                'Delete movie',
+                                'Its screenings and reservations will also be removed.'
+                            )}>
+                            {deleting ? 'Deleting...' : 'Delete'}
+                        </Button>
                     </>}
                 />
             </div>
@@ -50,4 +82,5 @@ export default function DisplayMovie(props: DisplayMovieProps){
 }
 interface DisplayMovieProps{
     movie: Movie;
+    onDeleted?: () => void | Promise<void>;
 }

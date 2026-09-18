@@ -16,7 +16,9 @@ export default function MovieList(props: MovieListProps){
     emptyListUI={<div className="empty-state"><span className="bi bi-film" aria-hidden="true"></span><p>No films are available yet.</p></div>}
     >
         <div className={styles.div}>
-            {props.movies?.map(movie=><DisplayMovie key={movie.id} movie={movie}/>)}
+            {props.movies?.map(movie => (
+                <DisplayMovie key={movie.id} movie={movie} onDeleted={props.onMovieDeleted} />
+            ))}
         </div>
    </GeneriscList>
    )
@@ -24,4 +26,5 @@ export default function MovieList(props: MovieListProps){
 
 interface MovieListProps{
     movies?: Movie[];
+    onMovieDeleted?: () => void | Promise<void>;
 }

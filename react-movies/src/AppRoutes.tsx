@@ -21,6 +21,7 @@ const EditTheater = lazy(() => import("./features/theaters/components/EditTheate
 const Register = lazy(() => import("./features/security/components/Register"));
 const Login = lazy(() => import("./features/security/components/Login"));
 const IndexUsers = lazy(() => import("./features/security/components/IndexUsers"));
+const MyBookings = lazy(() => import("./features/bookings/components/MyBookings"));
 
 export default function AppRoutes(){
     return (
@@ -48,6 +49,10 @@ export default function AppRoutes(){
 
             <Route path='/movies/filter' element={<FilterMovies />} />
             <Route path='/movie/:id' element={<MovieDetail />} />
+
+            <Route element={<ProtectRoute />}>
+                <Route path="/bookings" element={<MyBookings />} />
+            </Route>
 
             <Route path="/register" element={<Register /> } />
             <Route path="/login" element={<Login /> } />

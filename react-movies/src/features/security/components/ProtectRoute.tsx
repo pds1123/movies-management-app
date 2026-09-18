@@ -11,5 +11,5 @@ export default function ProtectRoute(props: ProtectRouteProps){
 }
 
 interface ProtectRouteProps {
-    claims: string[];
+    claims?: string[];
 }

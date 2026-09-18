@@ -17,6 +17,42 @@ namespace MoviesAPI
             modelBuilder.Entity<MovieGenre>().HasKey(e => new { e.GenreId, e.MovieId });
             modelBuilder.Entity<MovieTheater>().HasKey(e => new { e.TheaterId, e.MovieId });
             modelBuilder.Entity<MovieActor>().HasKey(e => new { e.ActorId, e.MovieId });
+
+            modelBuilder.Entity<Screening>()
+                .HasOne(screening => screening.Movie)
+                .WithMany(movie => movie.Screenings)
+                .HasForeignKey(screening => screening.MovieId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Screening>()
+                .HasOne(screening => screening.Theater)
+                .WithMany(theater => theater.Screenings)
+                .HasForeignKey(screening => screening.TheaterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(booking => booking.Screening)
+                .WithMany(screening => screening.Bookings)
+                .HasForeignKey(booking => booking.ScreeningId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(booking => booking.User)
+                .WithMany()
+                .HasForeignKey(booking => booking.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(booking => new { booking.ScreeningId, booking.UserId })
+                .IsUnique();
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(booking => booking.ConfirmationCode)
+                .IsUnique();
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(booking => booking.CheckInToken)
+                .IsUnique();
         }
 
         public DbSet<Genre> Genres { get; set; }
@@ -27,5 +63,7 @@ namespace MoviesAPI
         public DbSet<MovieTheater> MoviesTheaters { get; set; }
         public DbSet<MovieActor> MoviesActors { get; set; }
         public DbSet<Rating> MovieRatings { get; set; }
+        public DbSet<Screening> Screenings { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
     }
 }

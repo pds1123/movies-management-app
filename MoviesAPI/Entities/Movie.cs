@@ -16,5 +16,6 @@ namespace MoviesAPI.Entities
         public List<MovieGenre> MoviesGenres { get; set; } = new List<MovieGenre>();
         public List<MovieTheater> MoviesTheaters { get; set; } = new List<MovieTheater>();
         public List<MovieActor> MoviesActors { get; set; } = new List<MovieActor>();
+        public List<Screening> Screenings { get; set; } = [];
     }
 }

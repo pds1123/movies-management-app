@@ -7,7 +7,7 @@ import type AuthenticationResponse from "../models/AuthenticationResponse.model"
 import { getClaims, storeToken } from "../utils/HandleJWT";
 import { useContext, useState } from "react";
 import AuthenticationContext from "../utils/AuthenticationContext";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import extractIdentityErrors from "../utils/extractIdentityErrors";
 import type { AxiosError } from "axios";
 import DisplayErrors from "../../../components/DisplayErrors";
@@ -17,6 +17,7 @@ export default function AuthenticationForm(props: AuthenticationFormProps) {
 
     const {update} = useContext(AuthenticationContext);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [myErrors, setErrors] = useState<string[]>([]);
 
     const { register, handleSubmit, formState: { errors, isValid, isSubmitting } } =
@@ -30,7 +31,8 @@ export default function AuthenticationForm(props: AuthenticationFormProps) {
                 const response = await apiClient.post<AuthenticationResponse>(props.url, data);
                 storeToken(response.data);
                 update(getClaims());
-                navigate('/');
+                const returnUrl = searchParams.get('returnUrl');
+                navigate(returnUrl?.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/');
             }
             catch(err){
                 const errors = extractIdentityErrors(err as AxiosError);

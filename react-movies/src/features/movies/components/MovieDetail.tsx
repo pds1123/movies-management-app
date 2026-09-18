@@ -7,6 +7,7 @@ import type Coordinate from "../../../components/Map/coordinate.model";
 import Map from '../../../components/Map/Map';
 import resolveAssetUrl from "../../../utils/resolveAssetUrl";
 import YouTubePlayer from './YouTubePlayer';
+import ScreeningsSection from '../../bookings/components/ScreeningsSection';
 
 export default function MovieDetail() {
 
@@ -74,6 +75,8 @@ export default function MovieDetail() {
                     <div className="trailer-unavailable"><span className="bi bi-play-circle" aria-hidden="true"></span><p>Trailer unavailable</p></div>
                 )}
             </div>
+
+            <ScreeningsSection movieId={movie.id} movieTitle={movie.title} theaters={movie.theaters ?? []} />
 
                 {movie.actors && movie.actors.length > 0 && (
                     <section className="cast-section" aria-labelledby="cast-title">

@@ -22,18 +22,21 @@ namespace MoviesAPI.Controllers
         private readonly IOutputCacheStore outputCacheStore;
         private readonly IFileStorage fileStorage;
         private readonly IUsersService usersService;
+        private readonly ILogger<MoviesController> logger;
         private const string cacheTag = "movies";
         private readonly string container = "movies";
         
 
         public MoviesController(ApplicationDbContext context, IMapper mapper,
-            IOutputCacheStore outputCacheStore, IFileStorage fileStorage, IUsersService usersService)
+            IOutputCacheStore outputCacheStore, IFileStorage fileStorage, IUsersService usersService,
+            ILogger<MoviesController> logger)
         {
             this.context = context;
             this.mapper = mapper;
             this.outputCacheStore = outputCacheStore;
             this.fileStorage = fileStorage;
             this.usersService = usersService;
+            this.logger = logger;
 
         }
 
@@ -248,16 +251,31 @@ namespace MoviesAPI.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var movie = await context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await context.Movies
+                .Include(item => item.Screenings)
+                .ThenInclude(screening => screening.Bookings)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie is null)
             {
                 return NotFound();
             }
 
-            context.Remove(movie);
+            context.Bookings.RemoveRange(movie.Screenings.SelectMany(screening => screening.Bookings));
+            context.Screenings.RemoveRange(movie.Screenings);
+            context.Movies.Remove(movie);
             await context.SaveChangesAsync();
-            await fileStorage.Delete(movie.Poster, container);
+
+            try
+            {
+                await fileStorage.Delete(movie.Poster, container);
+            }
+            catch (Exception exception)
+            {
+                logger.LogWarning(exception,
+                    "Movie {MovieId} was deleted, but its poster could not be removed from storage.", id);
+            }
+
             await outputCacheStore.EvictByTagAsync(cacheTag, default);
 
             return NoContent();

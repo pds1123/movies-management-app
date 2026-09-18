@@ -11,5 +11,6 @@ namespace MoviesAPI.Entities
         [StringLength(75)]
         public required string Name { get; set; }
         public required Point Location { get; set; }
+        public List<Screening> Screenings { get; set; } = [];
     }
 }

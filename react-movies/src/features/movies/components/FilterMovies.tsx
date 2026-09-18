@@ -14,7 +14,7 @@ export default function FilterMovies() {
         upcomingReleases: false
     }
 
-    const { register, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm<FilterMoviesDTO>({
+    const { register, handleSubmit, reset, setValue, getValues, formState: { isSubmitting } } = useForm<FilterMoviesDTO>({
         defaultValues: initialValues
     })
 
@@ -23,6 +23,15 @@ export default function FilterMovies() {
     }
 
     const useFilterMoviesHook = useFilterMovies(initialValues, setValue);
+
+    async function refreshAfterDelete() {
+        if (useFilterMoviesHook.movies?.length === 1 && useFilterMoviesHook.page > 1) {
+            useFilterMoviesHook.setPage(useFilterMoviesHook.page - 1);
+            return;
+        }
+
+        await useFilterMoviesHook.loadRecords(getValues());
+    }
 
 
     return (
@@ -92,7 +101,7 @@ export default function FilterMovies() {
             </div>
 
             <div className="browse-results">
-                <MoviesList movies={useFilterMoviesHook.movies} />
+                <MoviesList movies={useFilterMoviesHook.movies} onMovieDeleted={refreshAfterDelete} />
             </div>
         </div>
     )
