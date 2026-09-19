@@ -53,6 +53,20 @@ namespace MoviesAPI
             modelBuilder.Entity<Booking>()
                 .HasIndex(booking => booking.CheckInToken)
                 .IsUnique();
+
+            modelBuilder.Entity<Membership>()
+                .HasOne(membership => membership.User)
+                .WithMany()
+                .HasForeignKey(membership => membership.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Membership>()
+                .HasIndex(membership => membership.UserId)
+                .IsUnique();
+
+            modelBuilder.Entity<Membership>()
+                .HasIndex(membership => membership.MembershipNumber)
+                .IsUnique();
         }
 
         public DbSet<Genre> Genres { get; set; }
@@ -65,5 +79,6 @@ namespace MoviesAPI
         public DbSet<Rating> MovieRatings { get; set; }
         public DbSet<Screening> Screenings { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Membership> Memberships { get; set; }
     }
 }

@@ -10,6 +10,7 @@ import customConfirm from '../../../utils/customConfirm';
 import type Booking from '../models/Booking.model';
 import type Screening from '../models/Screening.model';
 import BookingPass from './BookingPass';
+import type Membership from '../../membership/models/Membership.model';
 
 export default function ScreeningsSection({ movieId, movieTitle, theaters }: ScreeningsSectionProps) {
     const { claims } = useContext(AuthenticationContext);
@@ -22,6 +23,8 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
     const [capacity, setCapacity] = useState(30);
     const [theaterId, setTheaterId] = useState(theaters[0]?.id ?? 0);
     const [creating, setCreating] = useState(false);
+    const [membership, setMembership] = useState<Membership>();
+    const [membershipLoading, setMembershipLoading] = useState(false);
 
     const isLoggedIn = claims.length > 0;
     const isAdmin = claims.some(claim => claim.name === 'isadmin');
@@ -34,6 +37,20 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
     useEffect(() => {
         loadScreenings().catch((error: AxiosError) => setErrors(extractErrors(error)));
     }, [loadScreenings]);
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setMembership(undefined);
+            setMembershipLoading(false);
+            return;
+        }
+
+        setMembershipLoading(true);
+        apiClient.get<Membership>('/memberships/mine')
+            .then(response => setMembership(response.data))
+            .catch((error: AxiosError) => setErrors(current => [...current, ...extractErrors(error)]))
+            .finally(() => setMembershipLoading(false));
+    }, [isLoggedIn]);
 
     useEffect(() => {
         if (theaters.length > 0 && theaterId === 0) {
@@ -114,12 +131,20 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
                                     {soldOut ? 'Sold out' : `${screening.availableSeats} places available`}
                                 </p>
                                 <div className="screening-actions">
-                                    {isLoggedIn ? (
+                                    {isLoggedIn && membershipLoading ? (
+                                        <button type="button" className="btn btn-primary" disabled>
+                                            Checking membership...
+                                        </button>
+                                    ) : isLoggedIn && membership?.status === 'Active' ? (
                                         <button type="button" className="btn btn-primary"
                                             onClick={() => reserve(screening)}
                                             disabled={soldOut || submittingId === screening.id}>
                                             {submittingId === screening.id ? 'Reserving...' : 'Reserve'}
                                         </button>
+                                    ) : isLoggedIn ? (
+                                        <NavLink className="btn btn-outline-primary" to="/membership">
+                                            Membership required
+                                        </NavLink>
                                     ) : (
                                         <NavLink className="btn btn-primary"
                                             to={`/login?returnUrl=${encodeURIComponent(location.pathname)}`}>

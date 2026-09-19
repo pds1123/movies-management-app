@@ -43,6 +43,12 @@ export default function Menu() {
                             <NavLink to="/movies/filter" onClick={closeMenu}>
                                 Filter Movies</NavLink>
                         </li>
+                        <li>
+                            <NavLink to="/about" onClick={closeMenu}>About</NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/membership" onClick={closeMenu}>Membership</NavLink>
+                        </li>
 
                         <Authorized claims={['isadmin']}
                             authorized={<>

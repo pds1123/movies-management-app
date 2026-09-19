@@ -46,6 +46,17 @@ public class BookingsController(ApplicationDbContext context, UserManager<Identi
             return Unauthorized();
         }
 
+        var hasActiveMembership = await context.Memberships.AnyAsync(membership =>
+            membership.UserId == userId && membership.Status == MembershipStatus.Active);
+        if (!hasActiveMembership)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+            {
+                Title = "An active FRAME CINEMAS membership is required to reserve a screening.",
+                Status = StatusCodes.Status403Forbidden
+            });
+        }
+
         if (!context.Database.IsRelational())
         {
             return await CreateBooking(screeningId, userId, useTransaction: false);

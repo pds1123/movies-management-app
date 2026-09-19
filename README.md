@@ -2,7 +2,7 @@
 
 A full-stack cinema web application for an independent film programme, combining a public-facing catalogue with a protected management portal.
 
-The project began as a movie management system and is being developed into a portfolio-ready cinema experience. Visitors can browse films currently showing and upcoming releases, search the catalogue, view film details, and reserve places at scheduled screenings. Administrators can manage films, actors, genres, theatres, screenings, images, and user roles.
+The project began as a movie management system and is being developed into a portfolio-ready cinema experience. Visitors can browse films currently showing and upcoming releases, search the catalogue, view film details, learn about the cinema, and reserve places at scheduled screenings as FRAME members. Administrators can manage films, actors, genres, theatres, screenings, images, memberships, and user roles.
 
 ## Highlights
 
@@ -10,8 +10,9 @@ The project began as a movie management system and is being developed into a por
 
 - Browse films in theatres and upcoming releases.
 - Filter the catalogue and open detailed film pages.
-- View upcoming screening times and reserve up to ten places.
+- View upcoming screening times and reserve one place as an active member.
 - Receive a confirmation credential and manage existing reservations.
+- Read about the cinema and enquire about paid membership by email.
 - View cinema locations on an interactive Leaflet map.
 - Responsive loading, empty, error, and retry states.
 - Mobile-safe image URLs for local network development.
@@ -22,6 +23,7 @@ The project began as a movie management system and is being developed into a por
 - Schedule and cancel screenings with live capacity tracking.
 - Upload and validate movie and actor images.
 - Manage administrator roles.
+- Activate, cancel, and reactivate memberships while retaining member numbers.
 - Protect management routes and API endpoints with JWT authentication and role-based authorization.
 
 ### Production readiness
@@ -31,7 +33,7 @@ The project began as a movie management system and is being developed into a por
 - Local filesystem storage in development and Azure Blob Storage support in production.
 - Environment-based configuration with secrets excluded from source control.
 - Vercel frontend and Azure API deployment configuration.
-- 21 automated frontend and backend tests.
+- 26 automated frontend and backend tests.
 
 ## Architecture
 
@@ -146,4 +148,4 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for the required Vercel and Azure environment
 
 ## Project status
 
-The application is under active development. The current version includes a polished cinema programme, protected management workflows, and a reservation MVP with confirmation credentials. A public live demo will be added after deployment.
+The application is under active development. The current version includes a polished cinema programme, an enquiry-led paid membership workflow, protected management tools, and member-only reservations with confirmation credentials. A public live demo will be added after deployment.

@@ -94,6 +94,12 @@ public sealed class ApiTests(MoviesApiFactory factory) : IClassFixture<MoviesApi
             Assert.True(userResult.Succeeded);
             var claimResult = await userManager.AddClaimAsync(user, new Claim("isadmin", "true"));
             Assert.True(claimResult.Succeeded);
+            context.Add(new Membership
+            {
+                UserId = userId,
+                MembershipNumber = "FC-TEST01",
+                Status = MembershipStatus.Active
+            });
 
             var otherUser = new IdentityUser
             {
@@ -163,6 +169,56 @@ public sealed class ApiTests(MoviesApiFactory factory) : IClassFixture<MoviesApi
         using var otherLoginBody = JsonDocument.Parse(await otherLoginResponse.Content.ReadAsStringAsync());
         otherUserClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
             "Bearer", otherLoginBody.RootElement.GetProperty("token").GetString());
+
+        var nonMemberBookingResponse = await otherUserClient.PostAsJsonAsync(
+            $"/api/bookings/screening/{screeningId}", new { });
+        Assert.Equal(HttpStatusCode.Forbidden, nonMemberBookingResponse.StatusCode);
+
+        var activateResponse = await authenticatedClient.PostAsJsonAsync(
+            "/api/memberships/activate", new { email = otherEmail });
+        Assert.Equal(HttpStatusCode.OK, activateResponse.StatusCode);
+
+        var activeMembershipResponse = await otherUserClient.GetAsync("/api/memberships/mine");
+        Assert.Equal(HttpStatusCode.OK, activeMembershipResponse.StatusCode);
+        using (var activeMembershipBody = JsonDocument.Parse(
+            await activeMembershipResponse.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal("Active", activeMembershipBody.RootElement.GetProperty("status").GetString());
+            Assert.StartsWith("FC-", activeMembershipBody.RootElement
+                .GetProperty("membershipNumber").GetString());
+        }
+
+        var activeUsersResponse = await authenticatedClient.GetAsync(
+            "/api/users/usersList?page=1&recordsPerPage=50");
+        Assert.Equal(HttpStatusCode.OK, activeUsersResponse.StatusCode);
+        using (var activeUsersBody = JsonDocument.Parse(
+            await activeUsersResponse.Content.ReadAsStringAsync()))
+        {
+            var memberUser = activeUsersBody.RootElement.EnumerateArray()
+                .Single(item => item.GetProperty("email").GetString() == otherEmail);
+            Assert.Equal("Active", memberUser.GetProperty("membershipStatus").GetString());
+        }
+
+        var cancelMembershipResponse = await authenticatedClient.PostAsJsonAsync(
+            "/api/memberships/cancel", new { email = otherEmail });
+        Assert.Equal(HttpStatusCode.OK, cancelMembershipResponse.StatusCode);
+
+        var cancelledMembershipResponse = await otherUserClient.GetAsync("/api/memberships/mine");
+        using (var cancelledMembershipBody = JsonDocument.Parse(
+            await cancelledMembershipResponse.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal("Cancelled", cancelledMembershipBody.RootElement.GetProperty("status").GetString());
+        }
+
+        var cancelledUsersResponse = await authenticatedClient.GetAsync(
+            "/api/users/usersList?page=1&recordsPerPage=50");
+        using (var cancelledUsersBody = JsonDocument.Parse(
+            await cancelledUsersResponse.Content.ReadAsStringAsync()))
+        {
+            var memberUser = cancelledUsersBody.RootElement.EnumerateArray()
+                .Single(item => item.GetProperty("email").GetString() == otherEmail);
+            Assert.Equal("Cancelled", memberUser.GetProperty("membershipStatus").GetString());
+        }
 
         Assert.Equal(HttpStatusCode.NotFound,
             (await otherUserClient.GetAsync($"/api/bookings/{bookingId}")).StatusCode);

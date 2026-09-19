@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -9,6 +7,7 @@ using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
 using MoviesAPI.Services;
 using MoviesAPI.utilities;
+using MoviesAPI.Utilities;
 
 namespace MoviesAPI.Controllers
 {
@@ -18,7 +17,6 @@ namespace MoviesAPI.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
         private readonly IOutputCacheStore outputCacheStore;
         private readonly IFileStorage fileStorage;
         private readonly IUsersService usersService;
@@ -27,12 +25,11 @@ namespace MoviesAPI.Controllers
         private readonly string container = "movies";
         
 
-        public MoviesController(ApplicationDbContext context, IMapper mapper,
+        public MoviesController(ApplicationDbContext context,
             IOutputCacheStore outputCacheStore, IFileStorage fileStorage, IUsersService usersService,
             ILogger<MoviesController> logger)
         {
             this.context = context;
-            this.mapper = mapper;
             this.outputCacheStore = outputCacheStore;
             this.fileStorage = fileStorage;
             this.usersService = usersService;
@@ -52,14 +49,14 @@ namespace MoviesAPI.Controllers
                                     .Where(m => m.ReleaseDate > today)
                                     .OrderBy(m => m.ReleaseDate)
                                     .Take(top)
-                                    .ProjectTo<MovieDTO>(mapper.ConfigurationProvider)
+                                    .Select(DtoMappings.MovieProjection)
                                     .ToListAsync();
 
             var inTheaters = await context.Movies
                             .Where(m => m.MoviesTheaters.Select(mt => mt.MovieId).Contains(m.Id))
                             .OrderBy(m => m.ReleaseDate)
                             .Take(top)
-                            .ProjectTo<MovieDTO>(mapper.ConfigurationProvider)
+                            .Select(DtoMappings.MovieProjection)
                             .ToListAsync();
 
             var result = new LandingDTO();
@@ -74,7 +71,7 @@ namespace MoviesAPI.Controllers
         public async Task<ActionResult<MovieDetailsDTO>> Get(int id)
         {
             var movie = await context.Movies
-                .ProjectTo<MovieDetailsDTO>(mapper.ConfigurationProvider)
+                .Select(DtoMappings.MovieDetailsProjection)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie is null)
@@ -143,7 +140,7 @@ namespace MoviesAPI.Controllers
             await HttpContext.InsertPaginationParametersInHeader(moviesQueryable);
 
             var movies = await moviesQueryable.Paginate(moviesFilterDTO.PaginationDTO)
-                .ProjectTo<MovieDTO>(mapper.ConfigurationProvider)
+                .Select(DtoMappings.MovieProjection)
                 .ToListAsync();
 
             return movies;
@@ -154,12 +151,12 @@ namespace MoviesAPI.Controllers
         {
             var genres = await context.Genres
                         .OrderBy(g => g.Name)
-                        .ProjectTo<GenreDTO>(mapper.ConfigurationProvider)
+                        .Select(DtoMappings.GenreProjection)
                         .ToListAsync();
 
             var theaters = await context.Theaters
                 .OrderBy(t => t.Name)
-                .ProjectTo<TheaterDTO>(mapper.ConfigurationProvider)
+                .Select(DtoMappings.TheaterProjection)
                 .ToListAsync();
 
             return new MoviesPostGetDTO { Theaters = theaters, Genres = genres };
@@ -168,7 +165,7 @@ namespace MoviesAPI.Controllers
         [HttpPost]
         public async Task<CreatedAtRouteResult> Post([FromForm] MovieCreationDTO movieCreationDTO)
         {
-            var movie = mapper.Map<Movie>(movieCreationDTO);
+            var movie = movieCreationDTO.ToEntity();
 
             if (movieCreationDTO.Poster is not null)
             {
@@ -180,7 +177,7 @@ namespace MoviesAPI.Controllers
             context.Add(movie);
             await context.SaveChangesAsync();
             await outputCacheStore.EvictByTagAsync(cacheTag, default);
-            var movieDTO = mapper.Map<MovieDTO>(movie);
+            var movieDTO = movie.ToDto();
             return CreatedAtRoute("GetMovieById", new { id = movieDTO.Id }, movieDTO);
         }
 
@@ -188,7 +185,7 @@ namespace MoviesAPI.Controllers
         public async Task<ActionResult<MoviesPutGetDTO>> PutGet(int id)
         {
             var movie = await context.Movies
-                            .ProjectTo<MovieDetailsDTO>(mapper.ConfigurationProvider)
+                            .Select(DtoMappings.MovieDetailsProjection)
                             .FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie is null)
@@ -198,12 +195,12 @@ namespace MoviesAPI.Controllers
 
             var selectedGenresIds = movie.Genres.Select(g => g.Id).ToList();
             var nonSelectedGenres = await context.Genres.Where(g => !selectedGenresIds.Contains(g.Id))
-                                    .ProjectTo<GenreDTO>(mapper.ConfigurationProvider)
+                                    .Select(DtoMappings.GenreProjection)
                                     .ToListAsync();
 
             var selectedTheatersIds = movie.Theaters.Select(t => t.Id).ToList();
             var nonSelectedTheaters = await context.Theaters.Where(t => !selectedTheatersIds.Contains(t.Id))
-                                    .ProjectTo<TheaterDTO>(mapper.ConfigurationProvider)
+                                    .Select(DtoMappings.TheaterProjection)
                                     .ToListAsync();
 
             var response = new MoviesPutGetDTO();
@@ -232,7 +229,7 @@ namespace MoviesAPI.Controllers
                 return NotFound();
             }
 
-            movie = mapper.Map(movieCreationDTO, movie);
+            movieCreationDTO.ApplyTo(movie);
 
             if (movieCreationDTO.Poster != null)
             {

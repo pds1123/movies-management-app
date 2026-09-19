@@ -1,12 +1,13 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using MoviesAPI.DTOs;
+using MoviesAPI.utilities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,34 +17,54 @@ namespace MoviesAPI.Controllers
     [ApiController]
     [Route("api/users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isadmin")]
-    public class UsersController : CustomBaseController
+    public class UsersController : ControllerBase
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly IConfiguration configuration;
         private readonly ApplicationDbContext context;
         private readonly IOutputCacheStore outputCacheStore;
-        private readonly IMapper mapper;
         private const string cacheTag = "users";
 
         public UsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-            IConfiguration configuration, ApplicationDbContext context, IOutputCacheStore outputCacheStore,
-            IMapper mapper)
-            : base(context, mapper, outputCacheStore, cacheTag)
+            IConfiguration configuration, ApplicationDbContext context, IOutputCacheStore outputCacheStore)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.configuration = configuration;
             this.context = context;
             this.outputCacheStore = outputCacheStore;
-            this.mapper = mapper;
         }
 
         [HttpGet("usersList")]
         [OutputCache(Tags = [cacheTag])]
         public async Task<ActionResult<List<UserDTO>>> GetUsers([FromQuery] PaginationDTO paginationDTO)
         {
-            return await Get<IdentityUser, UserDTO>(paginationDTO, orderBy: u => u.Email!);
+            var query = context.Users.AsNoTracking();
+            await HttpContext.InsertPaginationParametersInHeader(query);
+
+            var users = await query
+                .OrderBy(user => user.Email)
+                .Paginate(paginationDTO)
+                .ToListAsync();
+
+            var userIds = users.Select(user => user.Id).ToList();
+            var memberships = await context.Memberships
+                .AsNoTracking()
+                .Where(membership => userIds.Contains(membership.UserId))
+                .ToDictionaryAsync(membership => membership.UserId);
+
+            return users.Select(user =>
+            {
+                memberships.TryGetValue(user.Id, out var membership);
+                return new UserDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email!,
+                    MembershipNumber = membership?.MembershipNumber,
+                    MembershipStatus = membership?.Status.ToString() ?? "Non-member"
+                };
+            }).ToList();
         }
 
         [HttpPost("register")]

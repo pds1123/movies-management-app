@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MoviesAPI;
 using MoviesAPI.Services;
-using MoviesAPI.utilities;
 using MoviesAPI.Utilities;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
@@ -97,12 +95,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid:4326));
 
-builder.Services.AddSingleton(provider => new MapperConfiguration(config =>
-{
-    var geometryFactory = provider.GetRequiredService<GeometryFactory>();
-    config.AddProfile(new AutoMapperProfiles(geometryFactory));
-}, provider.GetRequiredService<ILoggerFactory>()).CreateMapper());
-
 var useAzureFileStorage = builder.Configuration.GetValue<bool>("UseAzureFileStorage");
 
 if (useAzureFileStorage
@@ -132,8 +124,6 @@ builder.Services.AddHealthChecks()
         tags: ["live"])
     .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
-
-//builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddIdentityCore<IdentityUser>(options =>
     {
