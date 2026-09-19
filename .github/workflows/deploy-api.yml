@@ -1,0 +1,64 @@
+name: Deploy API to Azure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "MoviesAPI/**"
+      - "MoviesAPI.Tests/**"
+      - "dotnet-tools.json"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-api-production
+  cancel-in-progress: true
+
+env:
+  AZURE_WEBAPP_NAME: frame-cinemas-api-nz
+  DOTNET_VERSION: 10.0.x
+  PUBLISH_DIRECTORY: ${{ github.workspace }}/publish
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore MoviesAPI/MoviesAPI.sln
+
+      - name: Run API tests
+        run: dotnet test MoviesAPI/MoviesAPI.sln --configuration Release --no-restore
+
+      - name: Publish API
+        run: >-
+          dotnet publish MoviesAPI/MoviesAPI.csproj
+          --configuration Release
+          --no-restore
+          --output "${{ env.PUBLISH_DIRECTORY }}"
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy API
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.PUBLISH_DIRECTORY }}
