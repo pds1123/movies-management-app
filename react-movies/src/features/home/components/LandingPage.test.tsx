@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import apiClient from '../../../api/apiClient';
 import LandingPage from './LandingPage';
 
@@ -32,6 +32,10 @@ describe('LandingPage', () => {
     getMock.mockReset();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('shows loading placeholders while the programme is loading', () => {
     getMock.mockReturnValue(new Promise(() => undefined));
 
@@ -49,6 +53,19 @@ describe('LandingPage', () => {
 
     expect(await screen.findByRole('heading', { name: film.title })).toBeInTheDocument();
     expect(screen.getByText('No films are available yet.')).toBeInTheDocument();
+  });
+
+  it('explains that the demo service is waking after a delayed response', async () => {
+    vi.useFakeTimers();
+    getMock.mockReturnValue(new Promise(() => undefined));
+
+    renderPage();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6_000);
+    });
+
+    expect(screen.getByRole('status', { name: 'Preparing programme' })).toBeInTheDocument();
+    expect(screen.getByText('The cinema service is waking up.')).toBeInTheDocument();
   });
 
   it('shows an error and lets the visitor retry', async () => {

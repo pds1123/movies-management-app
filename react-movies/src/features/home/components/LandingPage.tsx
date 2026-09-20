@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MoviesList from "../../movies/components/MoviesList";
 import type LandingPageDTO from "../models/LandingPageDTO";
 import apiClient from "../../../api/apiClient";
@@ -7,25 +7,75 @@ import Button from "../../../components/Button.tsx";
 export default function LandingPage() {
 
     const [movies, setMovies] = useState<LandingPageDTO>();
-    const [hasError, setHasError] = useState(false);
+    const [loadState, setLoadState] = useState<ProgrammeLoadState>('loading');
+    const wakingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const requestController = useRef<AbortController | undefined>(undefined);
 
     useEffect(() => {
         loadRecords();
+
+        return () => {
+            requestController.current?.abort();
+            if (wakingTimer.current) {
+                clearTimeout(wakingTimer.current);
+            }
+        }
     }, [])
 
     async function loadRecords() {
         setMovies(undefined);
-        setHasError(false);
+        setLoadState('loading');
+        requestController.current?.abort();
+        const controller = new AbortController();
+        requestController.current = controller;
+
+        if (wakingTimer.current) {
+            clearTimeout(wakingTimer.current);
+        }
+
+        wakingTimer.current = setTimeout(() => {
+            setLoadState(current => current === 'loading' ? 'waking' : current);
+        }, 6_000);
 
         try {
-            const res = await apiClient.get<LandingPageDTO>('/movies/landing', { timeout: 8000 });
+            const res = await apiClient.get<LandingPageDTO>('/movies/landing', {
+                signal: controller.signal
+            });
             setMovies(res.data);
+            setLoadState('ready');
         } catch {
-            setHasError(true);
+            if (!controller.signal.aborted) {
+                setLoadState('error');
+            }
+        } finally {
+            if (requestController.current === controller && wakingTimer.current) {
+                clearTimeout(wakingTimer.current);
+                wakingTimer.current = undefined;
+            }
+            if (requestController.current === controller) {
+                requestController.current = undefined;
+            }
         }
     }
 
-    if (hasError) {
+    if (loadState === 'waking') {
+        return (
+            <section className="programme-section" aria-labelledby="programme-waking-title">
+                <div className="section-heading">
+                    <h2 id="programme-waking-title">Preparing the programme</h2>
+                </div>
+                <div className="programme-error" role="status" aria-label="Preparing programme">
+                    <span className="loading-mark" aria-hidden="true"></span>
+                    <div>
+                        <h3>The cinema service is waking up.</h3>
+                        <p>This portfolio demo may take up to a minute after a quiet period. The programme will appear automatically.</p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    if (loadState === 'error') {
         return (
             <section className="programme-section" aria-labelledby="programme-unavailable-title">
                 <div className="section-heading">
@@ -61,3 +111,5 @@ export default function LandingPage() {
         </div>
     )
 }
+
+type ProgrammeLoadState = 'loading' | 'waking' | 'ready' | 'error';
