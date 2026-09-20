@@ -1,6 +1,20 @@
 import { MapContainer, Marker, Popup, TileLayer, useMapEvent } from "react-leaflet";
+import { Icon } from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerIconRetina from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import type Coordinate from "./coordinate.model";
 import { useState } from "react";
+
+const mapMarkerIcon = new Icon({
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIconRetina,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
 
 export default function Map(props: MapProps){
 
@@ -20,6 +34,7 @@ export default function Map(props: MapProps){
             {props.allowClicks ? <HandleMapClick setCoordinate={handleCoordinate} /> : undefined}
 
             {coordiates?.map(coordiate => <Marker key={coordiate.lat + coordiate.lng}
+                icon={mapMarkerIcon}
                 position={[coordiate.lat,coordiate.lng]}>
                     {coordiate.message ? <Popup>{coordiate.message}</Popup> : undefined}
                 </Marker>)}
