@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.OutputCaching;
 using MoviesAPI;
 using MoviesAPI.Entities;
 using System.Net;
@@ -24,6 +25,38 @@ public sealed class ApiTests(MoviesApiFactory factory) : IClassFixture<MoviesApi
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(JsonValueKind.Array, body.RootElement.GetProperty("inTheaters").ValueKind);
         Assert.Equal(JsonValueKind.Array, body.RootElement.GetProperty("upcomingReleases").ValueKind);
+    }
+
+    [Fact]
+    public async Task LandingPage_DoesNotIncludeUpcomingMoviesInTheaters()
+    {
+        var title = $"Upcoming Film {Guid.NewGuid():N}";
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var movie = new Movie { Title = title, ReleaseDate = DateTime.Today.AddDays(1) };
+            var theater = new Theater
+            {
+                Name = "Future Film Cinema",
+                Location = new NetTopologySuite.Geometries.Point(174.76, -36.85) { SRID = 4326 }
+            };
+            context.AddRange(movie, theater);
+            await context.SaveChangesAsync();
+            context.MoviesTheaters.Add(new MovieTheater { MovieId = movie.Id, TheaterId = theater.Id });
+            await context.SaveChangesAsync();
+            var outputCache = scope.ServiceProvider.GetRequiredService<IOutputCacheStore>();
+            await outputCache.EvictByTagAsync("movies", default);
+        }
+
+        var response = await client.GetAsync("/api/movies/landing");
+        response.EnsureSuccessStatusCode();
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        var inTheaters = body.RootElement.GetProperty("inTheaters").EnumerateArray();
+        var upcoming = body.RootElement.GetProperty("upcomingReleases").EnumerateArray();
+        Assert.DoesNotContain(inTheaters, movie => movie.GetProperty("title").GetString() == title);
+        Assert.Contains(upcoming, movie => movie.GetProperty("title").GetString() == title);
     }
 
     [Fact]

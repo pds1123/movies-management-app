@@ -53,7 +53,8 @@ namespace MoviesAPI.Controllers
                                     .ToListAsync();
 
             var inTheaters = await context.Movies
-                            .Where(m => m.MoviesTheaters.Select(mt => mt.MovieId).Contains(m.Id))
+                            .Where(m => m.ReleaseDate <= today
+                                && m.MoviesTheaters.Select(mt => mt.MovieId).Contains(m.Id))
                             .OrderBy(m => m.ReleaseDate)
                             .Take(top)
                             .Select(DtoMappings.MovieProjection)
