@@ -4,6 +4,12 @@ A full-stack cinema web application for an independent film programme, combining
 
 The project began as a movie management system and is being developed into a portfolio-ready cinema experience. Visitors can browse films currently showing and upcoming releases, search the catalogue, view film details, learn about the cinema, and reserve places at scheduled screenings as FRAME members. Administrators can manage films, actors, genres, theatres, screenings, images, memberships, and user roles.
 
+## Live demo
+
+[View FRAME CINEMAS](https://frame-cinemas-inky.vercel.app/)
+
+> The backend is hosted on Azure's free tier and may take up to one minute to wake after a period of inactivity.
+
 ## Highlights
 
 ### Public experience
@@ -148,4 +154,4 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for the required Vercel and Azure environment
 
 ## Project status
 
-The application is under active development. The current version includes a polished cinema programme, an enquiry-led paid membership workflow, protected management tools, and member-only reservations with confirmation credentials. A public live demo will be added after deployment.
+The application is under active development. The current deployed version includes a polished cinema programme, an enquiry-led paid membership workflow, protected management tools, and member-only reservations with confirmation credentials.
