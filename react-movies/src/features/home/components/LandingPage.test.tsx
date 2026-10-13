@@ -30,6 +30,7 @@ function renderPage() {
 describe('LandingPage', () => {
   beforeEach(() => {
     getMock.mockReset();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -53,6 +54,25 @@ describe('LandingPage', () => {
 
     expect(await screen.findByRole('heading', { name: film.title })).toBeInTheDocument();
     expect(screen.getByText('No films are available yet.')).toBeInTheDocument();
+  });
+
+  it('keeps a recent programme visible while it refreshes in the background', async () => {
+    vi.useFakeTimers();
+    sessionStorage.setItem('frame-programme', JSON.stringify({
+      savedAt: Date.now(),
+      programme: { inTheaters: [film], upcomingReleases: [] }
+    }));
+    getMock.mockReturnValue(new Promise(() => undefined));
+
+    renderPage();
+    expect(screen.getByRole('heading', { name: film.title })).toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6_000);
+    });
+
+    expect(screen.queryByText('The cinema service is waking up.')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: film.title })).toBeInTheDocument();
   });
 
   it('explains that the demo service is waking after a delayed response', async () => {

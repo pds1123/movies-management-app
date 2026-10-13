@@ -11,6 +11,7 @@ import type Booking from '../models/Booking.model';
 import type Screening from '../models/Screening.model';
 import BookingPass from './BookingPass';
 import type Membership from '../../membership/models/Membership.model';
+import { getMovieScreenings, refreshMovieScreenings } from '../../movies/api/moviePageCache';
 
 export default function ScreeningsSection({ movieId, movieTitle, theaters }: ScreeningsSectionProps) {
     const { claims } = useContext(AuthenticationContext);
@@ -29,9 +30,11 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
     const isLoggedIn = claims.length > 0;
     const isAdmin = claims.some(claim => claim.name === 'isadmin');
 
-    const loadScreenings = useCallback(async () => {
-        const response = await apiClient.get<Screening[]>(`/screenings/movie/${movieId}`);
-        setScreenings(response.data);
+    const loadScreenings = useCallback(async (refresh = false) => {
+        const result = refresh
+            ? await refreshMovieScreenings(movieId)
+            : await getMovieScreenings(movieId);
+        setScreenings(result);
     }, [movieId]);
 
     useEffect(() => {
@@ -64,7 +67,7 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
         try {
             const response = await apiClient.post<Booking>(`/bookings/screening/${screening.id}`);
             setBooking(response.data);
-            await loadScreenings();
+            await loadScreenings(true);
         } catch (error) {
             setErrors(extractErrors(error as AxiosError));
         } finally {
@@ -84,7 +87,7 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
                 capacity
             });
             setStartsAt('');
-            await loadScreenings();
+            await loadScreenings(true);
         } catch (error) {
             setErrors(extractErrors(error as AxiosError));
         } finally {
@@ -96,7 +99,7 @@ export default function ScreeningsSection({ movieId, movieTitle, theaters }: Scr
         setErrors([]);
         try {
             await apiClient.delete(`/screenings/${id}`);
-            await loadScreenings();
+            await loadScreenings(true);
         } catch (error) {
             setErrors(extractErrors(error as AxiosError));
         }

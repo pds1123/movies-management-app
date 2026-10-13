@@ -4,12 +4,13 @@ import LandingPage from "./features/home/components/LandingPage";
 import HandleRouteNotFound from "./features/home/components/HandleRouteNotFound";
 import ProtectRoute from "./features/security/components/ProtectRoute";
 import Loading from "./components/Loading";
+import { loadMovieDetailRoute } from "./features/movies/components/movieDetailRoute";
 
 const IndexGenres = lazy(() => import("./features/genres/components/IndexGenres"));
 const CreateGenre = lazy(() => import("./features/genres/components/CreateGenre"));
 const EditGenre = lazy(() => import("./features/genres/components/EditGenre"));
 const FilterMovies = lazy(() => import("./features/movies/components/FilterMovies"));
-const MovieDetail = lazy(() => import("./features/movies/components/MovieDetail"));
+const MovieDetail = lazy(loadMovieDetailRoute);
 const CreateMovie = lazy(() => import("./features/movies/components/CreateMovie"));
 const EditMovie = lazy(() => import("./features/movies/components/EditMovie"));
 const IndexActors = lazy(() => import("./features/actors/components/IndexActors"));

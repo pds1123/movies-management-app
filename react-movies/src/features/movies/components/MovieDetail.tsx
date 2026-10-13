@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { NavLink, useParams } from "react-router"
-import apiClient from "../../../api/apiClient";
 import type Movie from "../models/movie.model";
 import Loading from "../../../components/Loading";
 import type Coordinate from "../../../components/Map/coordinate.model";
@@ -8,6 +7,7 @@ import Map from '../../../components/Map/Map';
 import resolveAssetUrl from "../../../utils/resolveAssetUrl";
 import YouTubePlayer from './YouTubePlayer';
 import ScreeningsSection from '../../bookings/components/ScreeningsSection';
+import { getMovieDetails, getMovieScreenings } from '../api/moviePageCache';
 
 export default function MovieDetail() {
 
@@ -15,9 +15,22 @@ export default function MovieDetail() {
     const [movie, setMovie] = useState<Movie>();
 
     useEffect(() => {
-        apiClient.get<Movie>(`/movies/${id}`).then(res => {
-            setMovie(res.data);
-        })
+        const movieId = Number(id);
+        if (!Number.isInteger(movieId)) {
+            return;
+        }
+
+        let active = true;
+        void getMovieScreenings(movieId).catch(() => undefined);
+        getMovieDetails(movieId).then(result => {
+            if (active) {
+                setMovie(result);
+            }
+        });
+
+        return () => {
+            active = false;
+        };
     }, [id])
 
     if (!movie) {

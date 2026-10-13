@@ -10,11 +10,18 @@ import resolveAssetUrl from "../../../utils/resolveAssetUrl";
 import Swal from "sweetalert2";
 import extractErrors from "../../../utils/extractErrors";
 import type { AxiosError } from "axios";
+import { prefetchMoviePage } from "../api/moviePageCache";
+import { loadMovieDetailRoute } from "./movieDetailRoute";
 
 export default function DisplayMovie(props: DisplayMovieProps){
     
     const buildLink = () => `/movie/${props.movie.id}`
     const [deleting, setDeleting] = useState(false);
+
+    function prefetchDetails() {
+        void loadMovieDetailRoute();
+        prefetchMoviePage(props.movie.id);
+    }
 
     async function deleteMovie(){
         setDeleting(true);
@@ -50,12 +57,14 @@ export default function DisplayMovie(props: DisplayMovieProps){
     
     return (
         <article className={styles.movie}>
-            <NavLink to={buildLink()} className={styles.posterLink} aria-label={`View ${props.movie.title}`}>
+            <NavLink to={buildLink()} className={styles.posterLink} aria-label={`View ${props.movie.title}`}
+                onMouseEnter={prefetchDetails} onFocus={prefetchDetails} onTouchStart={prefetchDetails}>
                 <img src={resolveAssetUrl(props.movie.poster)} alt={`${props.movie.title} poster`} loading="lazy" />
             </NavLink>
             <div className={styles.details}>
                 <p className={styles.date}>From {releaseDate}</p>
-                <h3><NavLink to={buildLink()}>{props.movie.title}</NavLink></h3>
+                <h3><NavLink to={buildLink()} onMouseEnter={prefetchDetails}
+                    onFocus={prefetchDetails} onTouchStart={prefetchDetails}>{props.movie.title}</NavLink></h3>
                 <span className={styles.viewCue} aria-hidden="true">
                     View film <span className="bi bi-arrow-up-right"></span>
                 </span>
